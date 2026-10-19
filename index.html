@@ -178,6 +178,12 @@ function woche(){
 }
 woche();marks();
 
+// c1-team-ruhetag-spielmin-tore-vorlagen-stabi-ball-lauf-kraft-dehnen-gefuehl-schlaf*10 (max. 64 Zeichen)
+function kurz(d){
+  const s=d.spiel||{min:0,tore:0,vorlagen:0}, z=n=>Math.max(0,Math.min(999,Math.round(+n||0)));
+  return ['c1',{ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x',d.ruhetag?1:0,z(s.min),z(s.tore),z(s.vorlagen),
+    ...['stabi','ball','lauf','kraft','dehnen'].map(k=>z(d.eigen[k])),z(d.gefuehl),z(d.schlaf*10)].join('-');
+}
 $('sendBtn').onclick=()=>{
   if($('sendBtn').disabled)return;
   const eigen={};document.querySelectorAll('.step.mins').forEach(s=>eigen[s.dataset.k]=+s.dataset.v);
@@ -185,7 +191,11 @@ $('sendBtn').onclick=()=>{
     team:val('teamYN'), ruhetag:val('pauseYN')==='ja',
     spiel:+$('spMin').value>0?{min:+$('spMin').value,tore:+$('tore').dataset.v,vorlagen:+$('vorl').dataset.v}:null,
     eigen, gefuehl:val('gef')?+val('gef'):null, schlaf:+$('schlaf').value};
-  if(tg&&tg.sendData){tg.sendData(JSON.stringify(d));}
+  // Knopf in der Nachricht (Inline): sendData geht dort nicht, deshalb kurzer Start-Code an den Bot.
+  const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
+  const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
+  if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);}
+  else if(tg&&tg.sendData){tg.sendData(JSON.stringify(d));}
   else{$('sendBtn').textContent='Nur in Telegram möglich';}
 };
 </script>
