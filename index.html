@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>Mein Training</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -16,7 +16,8 @@
   --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--accent:#c23a55;--accent2:#9a9aa0;--blue:#64b5ef;color-scheme:dark}}
-*{box-sizing:border-box}
+*{box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
 html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px}
 .sh{background:var(--head);color:var(--headfg);padding:14px 16px 10px;display:flex;flex-direction:column;gap:8px}
 .sh h1{font:700 1.6rem var(--display);margin:0;letter-spacing:.03em;text-transform:uppercase}
@@ -122,6 +123,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 <button class="send" id="sendBtn">Senden</button>
 
 <script>
+document.addEventListener('gesturestart',e=>e.preventDefault());
 const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();}
 const $=id=>document.getElementById(id);
 const heute=new Date();
@@ -194,6 +196,7 @@ $('sendBtn').onclick=()=>{
   // Knopf in der Nachricht (Inline): sendData geht dort nicht, deshalb kurzer Start-Code an den Bot.
   const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
+  if(tg&&q&&!bot){$('sendBtn').textContent='Fehler: Bot-Adresse fehlt';return;}
   if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);}
   else if(tg&&tg.sendData){tg.sendData(JSON.stringify(d));}
   else{$('sendBtn').textContent='Nur in Telegram möglich';}
