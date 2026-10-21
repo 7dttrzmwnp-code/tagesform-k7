@@ -251,7 +251,8 @@ const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Son
 const vb=W&&W.vb;
 const VGL=vb?{spielmin:vb.m||0,tore:vb.t||0,vorl:vb.v||0,stabiTage:vb.st||0,stabiMin:vb.sm||0,eigen:vb.e||0}:VORWOCHE;
 const VGLTXT=vb&&TODAY<6?`bis ${DAYL[TODAY]} letzte Woche`:'letzte Woche';
-const SAISON=W&&W.sa, SVOR=W&&W.sl, SERIE=(W&&W.sr)||{}, BEST=(W&&W.bw)||{};
+// Halbserien-Vergleich: laufende Halbserie (sh) gegen die ganze letzte (sl), nie die Saison gegen eine Halbserie
+const SAISON=W&&W.sa, SHALB=W&&W.sh, SVOR=W&&W.sl, SERIE=(W&&W.sr)||{}, BEST=(W&&W.bw)||{};
 const HIST=((W&&W.h)||[]).map(x=>({kw:x.kw,min:x.m||0,tore:x.t||0,vorl:x.v||0,stabi:x.st||0,sp:x.sp}));
 const ROLLEN={s:'start',e:'ein',b:'bank'};
 // Tag aus dem Anker in die Form der Anzeige bringen
@@ -420,8 +421,8 @@ function renderWoche(){
   if(SERIE.tg>=3)ser.push(`<div><b>✅ ${SERIE.tg}</b><small>Tage in Folge eingetragen</small></div>`);
   let saison='';
   if(SAISON){const up=[];
-    if(SVOR){if(SAISON.t>SVOR.t)up.push(`${SAISON.t-SVOR.t} ${tor(SAISON.t-SVOR.t)}`);if(SAISON.v>SVOR.v)up.push(`${SAISON.v-SVOR.v} ${vorl(SAISON.v-SVOR.v)}`);if((SAISON.st||0)>(SVOR.st||0))up.push(`${SAISON.st-SVOR.st} Stabi-Tage`)}
-    saison=`<section><span class="ql">Deine Saison bisher${SAISON.name?' · '+esc(SAISON.name):''}</span><div class="season"><div><b>${SAISON.sp||0}</b><small>Spiele</small></div><div><b>${SAISON.m||0}</b><small>Minuten</small></div><div><b>${SAISON.t||0}</b><small>${tor(SAISON.t||0)}</small></div><div><b>${SAISON.v||0}</b><small>${vorl(SAISON.v||0)}</small></div></div>${up.length?`<span class="upline">▲ Schon ${up.slice(0,2).join(' und ')} mehr als in der ganzen ${esc(SVOR.name||'letzten Halbserie')}</span>`:''}</section>`}
+    if(SVOR&&SHALB){const H=SHALB;if((H.t||0)>(SVOR.t||0))up.push(`${H.t-(SVOR.t||0)} ${tor(H.t-(SVOR.t||0))}`);if((H.v||0)>(SVOR.v||0))up.push(`${H.v-(SVOR.v||0)} ${vorl(H.v-(SVOR.v||0))}`);if((H.st||0)>(SVOR.st||0))up.push(`${H.st-(SVOR.st||0)} Stabi-Tage`)}
+    saison=`<section><span class="ql">Deine Saison bisher${SAISON.name?' · '+esc(SAISON.name):''}</span><div class="season"><div><b>${SAISON.sp||0}</b><small>Spiele</small></div><div><b>${SAISON.m||0}</b><small>Minuten</small></div><div><b>${SAISON.t||0}</b><small>${tor(SAISON.t||0)}</small></div><div><b>${SAISON.v||0}</b><small>${vorl(SAISON.v||0)}</small></div></div>${up.length?`<span class="upline">▲ ${esc(SHALB.name||'Diese Halbserie')}: schon ${up.slice(0,2).join(' und ')} mehr als in der ganzen ${esc(SVOR.name||'letzten Halbserie')}</span>`:''}</section>`}
   const rest=Math.max(0,ZIEL.stabiTage-s.stabiTage), pct=Math.min(100,s.stabiTage/ZIEL.stabiTage*100);
     $('pWoche').innerHTML=`
   <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
