@@ -119,6 +119,14 @@ section{display:flex;flex-direction:column;gap:8px}
 .chathint{display:none}
 body.inline .chathint{display:flex}
 body.inline :is(#gegner,#noteBox,#noteSum){display:none!important}
+.nz{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:.92rem;border-left:3px solid var(--accent);padding:4px 10px}
+details.nz{display:block}
+details.nz summary{display:grid;grid-template-columns:auto 1fr;gap:8px;list-style:none;cursor:pointer}
+details.nz summary::-webkit-details-marker{display:none}
+details.nz summary b{color:var(--accent);font-size:.82rem}
+details.nz[open] summary span:last-child{display:none}
+details.nz p{margin:4px 0 0}
+.nzday{background:var(--chip);border-radius:8px;padding:1px 6px;font-size:.8rem;font-weight:700;white-space:nowrap}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -240,7 +248,22 @@ const week=Array.from({length:7},(_,i)=>{const d=W&&W.t&&W.t[i];if(!d)return nul
   return {team:d.tm||null,ruhe:!!d.ru,
     spiel:d.sp?{rolle:ROLLEN[d.sp.r]||d.sp.r||null,min:d.sp.m||0,tore:d.sp.t||0,vorl:d.sp.v||0,gegner:d.sp.g||''}:null,
     eigen:{stabi:e[0]||0,ball:e[1]||0,lauf:e[2]||0,kraft:e[3]||0,dehnen:e[4]||0},
-    rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',zeit:d.z||''};});
+    rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',voice:!!d.nv,zeit:d.z||''};});
+// Grober Abgleich Formular gegen Notiz (Rolle, Tore, Vorlagen), nur als Hinweis für den Überblick
+const ZAHL={ein:1,eins:1,eine:1,einen:1,einem:1,zwei:2,drei:3,vier:4,'fünf':5};
+function widerspruch(d){
+  if(!d||!d.spiel||!d.notiz)return [];
+  const t=d.notiz.toLowerCase(),sp=d.spiel,w=[];
+  const n=x=>/^\d+$/.test(x)?+x:ZAHL[x];
+  const zahl=re=>{const m=t.match(re);return m?n(m[1]):null};
+  const tz=zahl(/(\d+|eine[nm]?|eins|ein|zwei|drei|vier|fünf)\s+(?:tor|tore|torer|treffer)\b/);
+  const vz=zahl(/(\d+|eine[nm]?|eins|ein|zwei|drei|vier|fünf)\s+vorlagen?\b/);
+  if(/eingewechselt/.test(t)&&sp.rolle==='start')w.push('Formular Startelf, Notiz eingewechselt');
+  if(/(startelf|von anfang|von beginn)/.test(t)&&sp.rolle==='ein')w.push('Formular eingewechselt, Notiz Startelf');
+  if(tz!=null&&tz!==sp.tore)w.push(`Formular ${sp.tore} ${sp.tore===1?'Tor':'Tore'}, Notiz ${tz}`);
+  if(vz!=null&&vz!==sp.vorl)w.push(`Formular ${sp.vorl} ${sp.vorl===1?'Vorlage':'Vorlagen'}, Notiz ${vz}`);
+  return w;
+}
 
 let f, view='team', dayOpen=true, noteOpen=true;
 const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},rpe:null,gef:null,schlaf:null,notiz:''});
@@ -324,7 +347,7 @@ $('send').onclick=()=>{
   $('send').textContent=tg&&q?'Fehler: Bot-Adresse fehlt':'Nur in Telegram möglich';
 };
 function sumUp(){
-  const s={team:0,spiele:[],spielmin:0,tore:0,vorl:0,stabiTage:0,stabiMin:0,eigen:0,last:0,schlafKurz:[],gefTief:[],notizen:[],rpe:[]};
+  const s={team:0,spiele:[],spielmin:0,tore:0,vorl:0,stabiTage:0,stabiMin:0,eigen:0,last:0,schlafKurz:[],gefTief:[],notizen:[],widerspruch:[],rpe:[]};
   week.forEach((d,i)=>{if(!d)return;
     if(d.team==='ja')s.team++;
     if(d.spiel){s.spiele.push([i,d.spiel]);s.spielmin+=d.spiel.min;s.tore+=d.spiel.tore;s.vorl+=d.spiel.vorl}
@@ -332,7 +355,8 @@ function sumUp(){
     const em=Object.values(d.eigen).reduce((a,b)=>a+b,0);s.eigen+=em;
     if(d.schlaf!=null&&d.schlaf<7)s.schlafKurz.push(i);
     if(d.gef!=null&&d.gef<=2)s.gefTief.push(i);
-    if(d.notiz)s.notizen.push([i,d.notiz]);
+    if(d.notiz)s.notizen.push([i,d.notiz,d.voice]);
+    const wd=widerspruch(d);if(wd.length)s.widerspruch.push([i,wd]);
     if(d.rpe)s.rpe.push(d.rpe);
   });
   return s;
@@ -375,6 +399,7 @@ function renderBerater(){
   const s=sumUp(), a=[];
   if(s.schlafKurz.length>=2)a.push(['bad',`${s.schlafKurz.length} Nächte unter 7 Stunden (${s.schlafKurz.map(i=>DAYS[i]).join(', ')})`]);
   if(s.gefTief.length>=2)a.push(['bad',`Befinden ${s.gefTief.length}× schlecht (${s.gefTief.map(i=>DAYS[i]).join(', ')})`]);
+  s.widerspruch.forEach(([i,w])=>a.push(['warn',`${DAYS[i]}: passt nicht zusammen (${w.join('; ')}), bitte nachfragen`]));
   if(s.notizen.length)a.push(['warn',`${s.notizen.length} Zusatzinfo${s.notizen.length>1?'s':''} von ${esc(NAME)}, siehe unten`]);
   if(s.stabiTage<ZIEL.stabiTage)a.push(['warn',`Stabi ${s.stabiTage} von ${ZIEL.stabiTage} Tagen, noch ${ZIEL.stabiTage-s.stabiTage} offen`]);
   else a.push(['ok',`Stabi-Ziel geschafft (${s.stabiTage} von ${ZIEL.stabiTage})`]);
@@ -396,7 +421,7 @@ function renderBerater(){
   <section><span class="ql">Spiele</span>${spiele?`<table class="log">${spiele}</table>`:'<p class="hint">Noch kein Spiel eingetragen.</p>'}</section>
   <section><span class="ql">Stabi zu Hause</span>${strip()}</section>
   ${charts(s)}
-  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t])=>`<div class="quote">${DAYS[i]}: ${esc(t)}</div>`).join('')}</section>`:''}
+  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t,v])=>{const k=`<span class="nzday">${v?'🎤 ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('')}</section>`:''}
   <section><span class="ql">Außerdem</span><p class="hint" style="margin:0">${s.team}× Mannschaftstraining · ${s.eigen} min eigenes Training · Anstrengung im Schnitt ${avg?avg.toFixed(1).replace('.',','):'–'} von 10</p></section>`;
 }
 
