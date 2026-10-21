@@ -115,6 +115,12 @@ section{display:flex;flex-direction:column;gap:8px}
 .season div{background:var(--chip);border-radius:10px;padding:8px 2px;display:flex;flex-direction:column}
 .season b{font:700 1.4rem var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
 .season small{color:var(--muted);font-size:.75rem}
+.streak{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.streak div{background:var(--chip);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}
+.streak b{font:700 1.5rem var(--display);font-variant-numeric:tabular-nums;line-height:1.1}
+.streak small{color:var(--muted);font-size:.75rem}
+.best{background:var(--chip);border-left:4px solid var(--accent);border-radius:8px;padding:8px 10px;font-weight:600}
+.upline{color:var(--ok);font-weight:700;font-size:.85rem}
 
 .chathint{display:none}
 body.inline .chathint{display:flex}
@@ -240,6 +246,12 @@ const ZIEL={stabiTage:(W&&W.ziel)||4};
 const HASVW=!!(W&&W.vw);
 const vw=(W&&W.vw)||{};
 const VORWOCHE={spielmin:vw.m||0,tore:vw.t||0,vorl:vw.v||0,stabiTage:vw.st||0,stabiMin:vw.sm||0,eigen:vw.e||0};
+const DAYL=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+// Fairer Vergleich: Vorwoche nur bis zum gleichen Wochentag (vb), sonst ganze Vorwoche
+const vb=W&&W.vb;
+const VGL=vb?{spielmin:vb.m||0,tore:vb.t||0,vorl:vb.v||0,stabiTage:vb.st||0,stabiMin:vb.sm||0,eigen:vb.e||0}:VORWOCHE;
+const VGLTXT=vb&&TODAY<6?`bis ${DAYL[TODAY]} letzte Woche`:'letzte Woche';
+const SAISON=W&&W.sa, SVOR=W&&W.sl, SERIE=(W&&W.sr)||{}, BEST=(W&&W.bw)||{};
 const HIST=((W&&W.h)||[]).map(x=>({kw:x.kw,min:x.m||0,tore:x.t||0,vorl:x.v||0,stabi:x.st||0,sp:x.sp}));
 const ROLLEN={s:'start',e:'ein',b:'bank'};
 // Tag aus dem Anker in die Form der Anzeige bringen
@@ -371,7 +383,8 @@ function sumUp(){
   });
   return s;
 }
-const delta=(a,b,u='')=>{if(!HASVW)return '';const d=a-b,U=Math.abs(d)===1&&u===' Tage'?' Tag':u;return d>0?`<span class="delta up">▲ ${d}${U} zur Vorwoche</span>`:d<0?`<span class="delta down">▼ ${-d}${U} zur Vorwoche</span>`:`<span class="delta same">● wie Vorwoche</span>`};
+const VWK=vb&&TODAY<6?` (bis ${DAYS[TODAY]})`:'';
+const delta=(a,b,u='')=>{if(!HASVW)return '';const d=a-b,U=Math.abs(d)===1&&u===' Tage'?' Tag':u;return d>0?`<span class="delta up">▲ ${d}${U} zur Vorwoche${VWK}</span>`:d<0?`<span class="delta down">▼ ${-d}${U} zur Vorwoche${VWK}</span>`:`<span class="delta same">● wie Vorwoche${VWK}</span>`};
 const tor=n=>n===1?'Tor':'Tore', vorl=n=>n===1?'Vorlage':'Vorlagen';
 function strip(){return `<div class="strip">${DAYS.map((d,i)=>{const w=week[i];const yes=w&&w.eigen.stabi>0;return `<div class="${yes?'yes':''} ${i===TODAY?'today':''}"><small>${d}</small><span>${yes?'✓':w?'–':'·'}</span><small>${yes?w.eigen.stabi+"'":''}</small></div>`}).join('')}</div>`}
 function dayLog(){
@@ -385,24 +398,40 @@ function dayLog(){
 const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function renderWoche(){
-  const s=sumUp(), V=VORWOCHE, plus=[];
-  if(s.tore>V.tore)plus.push(['⚽',`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr als letzte Woche`]);
-  if(s.vorl>V.vorl)plus.push(['🎯',`${s.vorl-V.vorl} ${vorl(s.vorl-V.vorl)} mehr als letzte Woche`]);
-  if(s.stabiMin>V.stabiMin)plus.push(['💪',`${s.stabiMin-V.stabiMin} min mehr Stabi als letzte Woche`]);
-  if(s.spielmin>V.spielmin)plus.push(['⏱️',`${s.spielmin-V.spielmin} Spielminuten mehr als letzte Woche`]);
+  const s=sumUp(), V=VGL, plus=[];
+  if(s.tore>V.tore)plus.push(['⚽',`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr`]);
+  if(s.vorl>V.vorl)plus.push(['🎯',`${s.vorl-V.vorl} ${vorl(s.vorl-V.vorl)} mehr`]);
+  if(s.stabiMin>V.stabiMin)plus.push(['💪',`${s.stabiMin-V.stabiMin} min mehr Stabi`]);
+  if(s.spielmin>V.spielmin)plus.push(['⏱️',`${s.spielmin-V.spielmin} Spielminuten mehr`]);
   if(s.eigen>V.eigen)plus.push(['🏃',`${s.eigen-V.eigen} min mehr eigenes Training`]);
   if(!HASVW)plus.length=0;
   const scorer=s.tore+s.vorl;
   const hero=scorer?{big:`${s.tore} ${tor(s.tore)} · ${s.vorl} ${vorl(s.vorl)}`,txt:scorer>1?'Starke Woche, du warst an '+scorer+' Toren beteiligt!':'Du hast ein Tor vorbereitet oder erzielt. Weiter so!'}
     :s.stabiTage>=ZIEL.stabiTage?{big:'Ziel geschafft',txt:`${s.stabiTage} Tage Stabi. Genau so!`}
-    :{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:'Tage Stabi. Du bist auf Kurs!'};
+    :{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:`Tage Stabi. Noch ${ZIEL.stabiTage-s.stabiTage}, dann ist das Ziel geschafft!`};
+  // Bestwerte: nur zeigen, wenn die laufende Woche einen früheren Bestwert übertrifft
+  const best=[];
+  if(BEST.sm>0&&s.stabiMin>BEST.sm)best.push(`${s.stabiMin} min Stabi in einer Woche`);
+  if(BEST.e>0&&s.eigen>BEST.e)best.push(`${s.eigen} min eigenes Training in einer Woche`);
+  if(BEST.m>0&&s.spielmin>BEST.m)best.push(`${s.spielmin} Spielminuten in einer Woche`);
+  if(BEST.tv>0&&s.tore+s.vorl>BEST.tv)best.push(`an ${s.tore+s.vorl} Toren beteiligt in einer Woche`);
+  const ser=[];
+  if(SERIE.wz>=2)ser.push(`<div><b>🔥 ${SERIE.wz}</b><small>Wochen in Folge Stabi-Ziel</small></div>`);
+  if(SERIE.tg>=3)ser.push(`<div><b>✅ ${SERIE.tg}</b><small>Tage in Folge eingetragen</small></div>`);
+  let saison='';
+  if(SAISON){const up=[];
+    if(SVOR){if(SAISON.t>SVOR.t)up.push(`${SAISON.t-SVOR.t} ${tor(SAISON.t-SVOR.t)}`);if(SAISON.v>SVOR.v)up.push(`${SAISON.v-SVOR.v} ${vorl(SAISON.v-SVOR.v)}`);if((SAISON.st||0)>(SVOR.st||0))up.push(`${SAISON.st-SVOR.st} Stabi-Tage`)}
+    saison=`<section><span class="ql">Deine Saison bisher${SAISON.name?' · '+esc(SAISON.name):''}</span><div class="season"><div><b>${SAISON.sp||0}</b><small>Spiele</small></div><div><b>${SAISON.m||0}</b><small>Minuten</small></div><div><b>${SAISON.t||0}</b><small>${tor(SAISON.t||0)}</small></div><div><b>${SAISON.v||0}</b><small>${vorl(SAISON.v||0)}</small></div></div>${up.length?`<span class="upline">▲ Schon ${up.slice(0,2).join(' und ')} mehr als in der ganzen ${esc(SVOR.name||'letzten Halbserie')}</span>`:''}</section>`}
   const rest=Math.max(0,ZIEL.stabiTage-s.stabiTage), pct=Math.min(100,s.stabiTage/ZIEL.stabiTage*100);
     $('pWoche').innerHTML=`
   <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
     <small class="heroline">${s.spielmin} Spielminuten · ${s.stabiMin} min Stabi · ${s.eigen} min eigenes Training</small></div>
-  ${plus.length?`<section><span class="ql">Besser als letzte Woche</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
+  ${best.length?`<div class="best">🏅 Neuer Bestwert: ${best[0]}</div>`:''}
+  ${plus.length?`<section><span class="ql">Besser als ${VGLTXT}</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
   <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`Noch ${rest} ${rest===1?'Tag':'Tage'}!`:'Geschafft ✓'}</span></div>
   ${strip()}</section>
+  ${ser.length?`<div class="streak">${ser.join('')}</div>`:''}
+  ${saison}
   <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>`;
 }
 function renderBerater(){
