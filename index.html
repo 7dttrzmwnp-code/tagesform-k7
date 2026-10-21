@@ -116,6 +116,9 @@ section{display:flex;flex-direction:column;gap:8px}
 .season b{font:700 1.4rem var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
 .season small{color:var(--muted);font-size:.75rem}
 
+.chathint{display:none}
+body.inline .chathint{display:flex}
+body.inline :is(#gegner,#noteBox,#noteSum){display:none!important}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
@@ -194,6 +197,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
     </div>
 
     <div class="daysum" id="noteSum" hidden><span><b>Zusatzinfo ✓</b> <span id="noteSumT"></span></span><button class="link" id="noteEdit">Ändern</button></div>
+    <div class="daysum chathint" id="chatHint"><span>💬 Gegner oder Zusatzinfo fragt dich der Bot nach dem Senden im Chat. Schreib kurz oder schick eine Sprachnachricht 🎤</span></div>
     <div class="q" id="noteBox"><span class="ql">Zusatzinfos (freiwillig)</span>
       <textarea id="notiz" placeholder="z. B. Knie zwickt, Trainer hat Position gewechselt"></textarea></div>
     </div>
@@ -214,6 +218,9 @@ const $=id=>document.getElementById(id);
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
 const heuteDatum=new Date();
+// Knopf in der Nachricht: nur Zahlen gehen per Startcode, Freitext fragt der Bot danach im Chat ab
+const INLINE=!!(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id);
+if(INLINE)document.body.classList.add('inline');
 
 let W=null;
 try{const m=location.hash.match(/[#&]w=([^&]+)/);if(m)W=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(_){}
@@ -312,8 +319,7 @@ $('send').onclick=()=>{
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
   if(tg&&q&&bot){
-    if(d.notiz||(d.spiel&&d.spiel.gegner))toast('Gegner und Zusatzinfo gehen nur über den Knopf unten im Chat.');
-    setTimeout(()=>{tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);},d.notiz||(d.spiel&&d.spiel.gegner)?1500:0);
+    tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);
     return;}
   $('send').textContent=tg&&q?'Fehler: Bot-Adresse fehlt':'Nur in Telegram möglich';
 };
