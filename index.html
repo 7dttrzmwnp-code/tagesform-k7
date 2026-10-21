@@ -122,11 +122,18 @@ section{display:flex;flex-direction:column;gap:8px}
 *{touch-action:manipulation}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg)}
-.app{min-height:100vh}
+/* Seite als feste Fläche: Inhalt scrollt innen, Senden-Leiste bleibt unten stehen */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+.app{height:100%;min-height:0;padding-bottom:0;display:flex;flex-direction:column}
+.scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.footer{flex:none;background:var(--bg);padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 14px -10px rgba(0,0,0,.35)}
+.footer .send{position:static;transform:none;width:100%;display:block}
+.toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
 <div class="app">
+ <div class="scroll" id="scroll">
   <div class="sh">
     <div><h1 id="title">Mein Training</h1><small id="sub"></small></div>
     <div class="tabs two"><button data-t="ein" class="on">Eintragen</button><button data-t="woche">Meine Woche</button><button data-t="berater" hidden>Überblick</button></div>
@@ -194,14 +201,15 @@ body{margin:0;background:var(--bg)}
 
   <div class="body" id="pWoche" hidden></div>
   <div class="body" id="pBerater" hidden></div>
-  <button class="send" id="send" disabled>Senden</button>
+</div>
+  <div class="footer" id="footer"><button class="send" id="send" disabled>Senden</button></div>
   <div class="toast" id="toast" hidden></div>
 </div>
 
 <script>
 // Mini-App Check-in (Version 2). Wochendaten kommen vom Bot im Adress-Anker (#w=...), bleiben auf dem Handy.
 document.addEventListener('gesturestart',e=>e.preventDefault());
-const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();}
+const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(_){}}
 const $=id=>document.getElementById(id);
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
@@ -239,7 +247,7 @@ const DATUM=heuteDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',
 function load(){
   const d=week[TODAY]; f=blank();
   view='team';dayOpen=true;noteOpen=true;
-  $('doneBox').hidden=!d;$('form').hidden=!!d;$('send').hidden=!!d;
+  $('doneBox').hidden=!d;$('form').hidden=!!d;$('footer').hidden=!!d;
   if(d)$('doneTxt').textContent=d.zeit?`Gesendet um ${d.zeit} Uhr. Danke!`:'Danke!';
   render();
 }
@@ -422,7 +430,7 @@ const TITLES={ein:NAME?'Hallo '+NAME:'Mein Training',woche:'Meine Woche',berater
 const WOCHE=W&&W.von?`${W.von} bis ${W.bis}`:'Diese Woche';
 document.querySelector('.tabs').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const t=b.dataset.t;
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  $('pEin').hidden=t!=='ein';$('pWoche').hidden=t!=='woche';$('pBerater').hidden=t!=='berater';$('send').hidden=t!=='ein'||!!week[TODAY];
+  $('pEin').hidden=t!=='ein';$('pWoche').hidden=t!=='woche';$('pBerater').hidden=t!=='berater';$('footer').hidden=t!=='ein'||!!week[TODAY];$('scroll').scrollTop=0;
   $('title').textContent=TITLES[t];
   if(t==='woche')renderWoche();if(t==='berater')renderBerater();
   $('sub').textContent=t==='ein'?DATUM:WOCHE;
