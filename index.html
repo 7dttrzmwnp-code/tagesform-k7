@@ -8,199 +8,429 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
+/* Layout: Handy-Spalte wie die echte Mini-App (weinrot ins Schwarze), drei Reiter: Eintragen, Meine Woche (Spieler), Berater (Agentur) */
 :root{
-  --bg:#ffffff; --fg:#1b1f1d; --muted:#67706b; --line:#dde1dd; --chip:#f0f2f0;
-  --accent:#8e1b32; --accentfg:#ffffff; --accent2:#3a3a3e; --blue:#2a8bd0;
+  --bg:#ffffff; --fg:#1b1f1d; --muted:#67706b; --line:#dde1dd; --chip:#f0f2f0; --page:#e9e7e7;
+  --accent:#8e1b32; --accentfg:#ffffff; --accent2:#3a3a3e; --blue:#2a8bd0; --soft:#9aa4a0;
+  --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e;
   --head:linear-gradient(135deg,#7a1028 0%,#3d0a16 55%,#111113 100%); --headfg:#ffffff;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
 }
-@media (prefers-color-scheme:dark){:root{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--accent:#c23a55;--accent2:#9a9aa0;--blue:#64b5ef;color-scheme:dark}}
-*{box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
-html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px}
-.sh{background:var(--head);color:var(--headfg);padding:14px 16px 10px;display:flex;flex-direction:column;gap:8px}
-.sh h1{font:700 1.6rem var(--display);margin:0;letter-spacing:.03em;text-transform:uppercase}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--page);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4}
+.app{max-width:440px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;padding-bottom:96px}
+.tabs.two{grid-template-columns:1fr 1fr}
+.hero2{background:var(--head);color:var(--headfg);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:2px}
+.hero2 b{font:700 2rem var(--display);text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+.wins{display:flex;flex-direction:column;gap:6px}
+.wins div{display:grid;grid-template-columns:28px 1fr;align-items:center;background:var(--chip);border-left:4px solid var(--ok);border-radius:8px;padding:8px 10px;font-weight:600}
+.goal2{display:flex;flex-direction:column;gap:6px}
+.goal2 b{font:700 1.2rem var(--display)}
+.track{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.track i{display:block;height:100%;background:var(--accent)}
+.sh{background:var(--head);color:var(--headfg);padding-block:14px 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
+.sh h1{font:700 1.6rem var(--display);margin:0;letter-spacing:.03em;text-transform:uppercase;text-wrap:balance}
 .sh small{opacity:.85}
-.tabs{display:grid;grid-template-columns:1fr 1fr;background:rgba(0,0,0,.25);border-radius:10px;padding:3px}
-.tabs button{border:0;background:none;padding:8px;border-radius:8px;font:700 .95rem var(--body);color:inherit;opacity:.8;cursor:pointer}
-.tabs button.on{background:var(--bg);color:var(--fg);opacity:1}
-.body{padding:14px 16px 100px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);background:rgba(0,0,0,.25);border-radius:10px;padding:3px}
+.tabs button,.seg button{border:0;background:none;padding:8px 4px;border-radius:8px;font:700 .92rem var(--body);color:inherit;opacity:.8;cursor:pointer}
+.tabs button.on,.seg button.on{background:var(--bg);color:var(--fg);opacity:1}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--chip);border-radius:10px;padding:3px}
+.seg button.on{box-shadow:0 1px 3px rgba(0,0,0,.15)}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.body{padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 .ql{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
 .q{display:flex;flex-direction:column;gap:8px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tiles button{position:relative;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:12px;padding:12px 8px;font:700 .95rem var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tiles button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:12px;padding:12px 8px;font:700 .95rem var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 .tiles button span{font-size:1.3rem}
+.tiles button{position:relative}
 .tiles button.on{border-color:var(--accent);background:var(--accent);color:var(--accentfg)}
 .tiles button.done::after{content:"✓";position:absolute;top:5px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--accent);font-size:.8rem;display:grid;place-items:center;border:1.5px solid var(--accent)}
 .card{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
 .card h3{margin:0;font:700 1.1rem var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--accent)}
-.ex{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
 .n{font-weight:600}
-.step{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
-.step button{width:34px;height:34px;border-radius:50%;border:0;background:var(--chip);color:var(--fg);font:700 1.1rem var(--body);cursor:pointer}
-.step b{min-width:52px;text-align:center}
-.sum{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px;font-weight:700}
-.chips{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.chips.three{grid-template-columns:repeat(3,1fr)}
-.chips button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:10px;padding:10px 2px;font:600 .95rem var(--body);cursor:pointer}
+.chips{display:grid;gap:6px}
+.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c5{grid-template-columns:repeat(5,1fr)}.c7{grid-template-columns:repeat(7,1fr)}.c10{grid-template-columns:repeat(10,1fr)}
+.chips button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:10px;padding:9px 0;font:600 .9rem var(--body);cursor:pointer;font-variant-numeric:tabular-nums}
+.c7 button,.c10 button{font-size:.82rem;padding:8px 0}
 .chips button.on{border-color:var(--accent);background:var(--accent);color:var(--accentfg)}
-.row{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
-.row b{font:700 1.35rem var(--display)}
+.ex{display:flex;flex-direction:column;gap:6px}
+.ex .row b{font-variant-numeric:tabular-nums}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.row b{font:700 1.3rem var(--display)}
+.step{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.step button{width:36px;height:36px;border-radius:50%;border:0;background:var(--chip);color:var(--fg);font:700 1.1rem var(--body);cursor:pointer}
+.step b{min-width:28px;text-align:center;font:700 1.3rem var(--display)}
 input[type=range]{width:100%;accent-color:var(--accent)}
-.send:disabled{opacity:.4}
-.send{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));border:0;border-radius:12px;padding:15px;background:var(--accent);color:var(--accentfg);font:700 1.05rem var(--body);cursor:pointer}
+input[type=text],textarea{width:100%;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:10px;padding:10px;font:400 1rem var(--body)}
+textarea{min-height:64px;resize:vertical}
+.ghost{color:var(--muted);font-style:italic;font-family:var(--body);font-size:1rem;font-weight:400}
+.link{border:0;background:none;color:var(--accent);font:700 .9rem var(--body);cursor:pointer;padding:0}
+.hint{font-size:.82rem;color:var(--muted)}
+.banner{background:var(--chip);border-left:4px solid var(--ok);border-radius:8px;padding:8px 10px;font-size:.9rem}
+.send{position:fixed;left:50%;transform:translateX(-50%);width:calc(min(440px,100%) - 32px);bottom:calc(16px + env(safe-area-inset-bottom,0px));border:0;border-radius:12px;padding:15px;background:var(--accent);color:var(--accentfg);font:700 1.05rem var(--body);cursor:pointer;z-index:5}
+.send:disabled{opacity:.4;cursor:default}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);border-radius:20px;padding:8px 16px;font-weight:700;z-index:6}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stat{background:var(--chip);border-radius:12px;padding:10px 12px}
-.stat b{display:block;font:700 1.6rem var(--display);color:var(--accent)}
+.stat{background:var(--chip);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat b{font:700 1.7rem var(--display);color:var(--accent);line-height:1.05;font-variant-numeric:tabular-nums}
 .stat small{color:var(--muted)}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;height:140px;align-items:end}
-.col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:4px;font-size:.75rem;color:var(--muted)}
-.stack{width:100%;display:flex;flex-direction:column-reverse;border-radius:5px;overflow:hidden}
-.stack i{display:block;width:100%}
-.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
-.legend span{display:flex;align-items:center;gap:5px}
-.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.goal{background:var(--chip);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-.track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-.track i{display:block;height:100%;background:var(--accent)}
-.empty{color:var(--muted);text-align:center;padding:30px 0}
+.delta{font-size:.78rem;font-weight:700}
+.up{color:var(--ok)}.down{color:var(--bad)}.same{color:var(--muted)}
+.alert{border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;background:var(--chip)}
+.alert div{display:grid;grid-template-columns:12px 1fr;gap:8px;align-items:center;font-size:.92rem}
+.dot{width:10px;height:10px;border-radius:50%;display:block}
+.log{width:100%;border-collapse:collapse;font-size:.9rem}
+.log td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.log td:first-child{width:34px;font-weight:700}
+.log td:last-child{text-align:right;white-space:nowrap;color:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.strip div{background:var(--chip);border-radius:8px;padding:6px 0;font-size:.8rem;display:flex;flex-direction:column;gap:2px;align-items:center}
+.strip small{color:var(--muted);font-size:.7rem}
+.strip .yes{background:var(--accent);color:var(--accentfg)}
+.strip .yes small{color:inherit;opacity:.85}
+.strip .today{outline:2px solid var(--accent);outline-offset:-2px}
+.quote{border-left:3px solid var(--accent);padding:4px 10px;font-style:italic}
+.empty{color:var(--muted);text-align:center;padding:20px 0}
+section{display:flex;flex-direction:column;gap:8px}
+.done{background:var(--chip);border-left:4px solid var(--ok);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.done b{font:700 1.5rem var(--display);text-transform:uppercase}
+#form{display:flex;flex-direction:column;gap:16px}
+.more{border:1.5px dashed var(--line);background:none;color:var(--accent);border-radius:10px;padding:10px;font:700 .9rem var(--body);cursor:pointer}
+.heroline{opacity:.85;margin-top:6px;font-size:.85rem}
+.det summary{cursor:pointer;color:var(--accent);font-weight:700;padding:6px 0}
+.daybox{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:14px}
+.daybox h3{margin:0;font:700 1.1rem var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--accent)}
+.daybox h3 small{font:600 .8rem var(--body);text-transform:none;letter-spacing:0;color:var(--muted)}
+.daysum{background:var(--chip);border-left:4px solid var(--ok);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.92rem}
+.chart{width:100%;height:auto;display:block}
+.chart .cv{font:700 12px var(--body);fill:var(--fg)}
+.chart .ct{font:600 11px var(--body);fill:var(--muted)}
+.under{display:grid;text-align:center;font-size:.8rem;margin:0 10px;margin-top:-4px}
+.under.c6{grid-template-columns:repeat(6,1fr)}.under.c7d{grid-template-columns:repeat(7,1fr)}
+.season{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.season div{background:var(--chip);border-radius:10px;padding:8px 2px;display:flex;flex-direction:column}
+.season b{font:700 1.4rem var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
+.season small{color:var(--muted);font-size:.75rem}
+
 [hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+*{touch-action:manipulation}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg)}
+.app{min-height:100vh}
 </style>
 </head>
 <body>
-<div class="sh">
-  <div><h1>Mein Training</h1><small id="datum"></small></div>
-  <div class="tabs"><button id="tHeute" class="on">Heute</button><button id="tWoche">Meine Woche</button></div>
+<div class="app">
+  <div class="sh">
+    <div><h1 id="title">Mein Training</h1><small id="sub"></small></div>
+    <div class="tabs two"><button data-t="ein" class="on">Eintragen</button><button data-t="woche">Meine Woche</button><button data-t="berater" hidden>Überblick</button></div>
+  </div>
+
+  <div class="body" id="pEin">
+    <div class="done" id="doneBox" hidden><b>Heute erledigt ✅</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
+    <div id="form">
+    <div class="q"><span class="ql">Was war?</span>
+      <div class="tiles" id="art">
+        <button data-k="team"><span>⚽</span>Mannschafts&shy;training</button>
+        <button data-k="spiel"><span>🏟️</span>Spiel</button>
+        <button data-k="eigen"><span>💪</span>Stabi &amp; Eigenes</button>
+        <button data-k="ruhe"><span>😴</span>Ruhetag</button>
+      </div></div>
+
+    <div class="card" data-for="team" hidden>
+      <h3>Mannschaftstraining</h3>
+      <span class="n">Warst du beim Mannschaftstraining?</span>
+      <div class="chips c3" id="teamYN"><button data-v="ja">Ja</button><button data-v="nein">Nein</button><button data-v="faellt_aus">Fällt aus</button></div>
+    </div>
+
+    <div class="card" data-for="ruhe" hidden>
+      <h3>Ruhetag</h3>
+      <span class="n">Heute bewusst Pause gemacht?</span>
+      <div class="chips c2" id="ruheYN"><button data-v="ja">Ja</button><button data-v="nein">Nein</button></div>
+    </div>
+
+    <div class="card" data-for="spiel" hidden>
+      <h3>Spiel</h3>
+      <input type="text" id="gegner" placeholder="Gegen wen hast du gespielt?" aria-label="Gegner">
+      <div class="q"><span class="n">Wie warst du dabei?</span>
+        <div class="chips c3" id="rolle"><button data-v="start">Startelf</button><button data-v="ein">Eingewechselt</button><button data-v="bank">Nicht gespielt</button></div></div>
+      <div class="ex" id="minBox"><div class="row"><span class="n">Spielminuten</span><b id="spMinV">0 min</b></div>
+        <input type="range" id="spMin" min="0" max="100" step="5" value="0" aria-label="Spielminuten"></div>
+      <div class="row"><span class="n">Tore</span><div class="step" data-k="tore"><button aria-label="weniger">−</button><b>0</b><button aria-label="mehr">+</button></div></div>
+      <div class="row"><span class="n">Vorlagen</span><div class="step" data-k="vorl"><button aria-label="weniger">−</button><b>0</b><button aria-label="mehr">+</button></div></div>
+    </div>
+
+    <div class="card" data-for="eigen" hidden>
+      <h3>Stabi &amp; Eigenes</h3>
+      <div id="ex"></div>
+    </div>
+
+    <div class="daysum" id="daySum" hidden><span><b>Dein Tag ✓</b> <span id="daySumT"></span></span><button class="link" id="dayEdit">Ändern</button></div>
+    <div class="daybox" id="dayBox">
+    <h3>Dein Tag <small>(nur einmal)</small></h3>
+    <div class="q"><span class="ql">Wie anstrengend war der Tag?</span>
+      <div class="chips c10" id="rpe"></div>
+      <div class="row hint"><span>1 locker</span><span>10 am Limit</span></div></div>
+
+    <div class="q"><span class="ql">Wie fühlst du dich?</span>
+      <div class="chips c5" id="gef"><button data-v="1">😫</button><button data-v="2">😕</button><button data-v="3">😐</button><button data-v="4">🙂</button><button data-v="5">😄</button></div></div>
+
+    <div class="q"><div class="row"><span class="ql">Schlaf letzte Nacht</span><b id="schlafV"></b></div>
+      <input type="range" id="schlaf" min="4" max="11" step="0.5" value="8" aria-label="Schlaf in Stunden">
+      <span class="hint" id="schlafHint">Erst beim Verschieben wird der Schlaf gespeichert.</span></div>
+    </div>
+
+    <div class="daysum" id="noteSum" hidden><span><b>Zusatzinfo ✓</b> <span id="noteSumT"></span></span><button class="link" id="noteEdit">Ändern</button></div>
+    <div class="q" id="noteBox"><span class="ql">Zusatzinfos (freiwillig)</span>
+      <textarea id="notiz" placeholder="z. B. Knie zwickt, Trainer hat Position gewechselt"></textarea></div>
+    </div>
+  </div>
+
+  <div class="body" id="pWoche" hidden></div>
+  <div class="body" id="pBerater" hidden></div>
+  <button class="send" id="send" disabled>Senden</button>
+  <div class="toast" id="toast" hidden></div>
 </div>
-
-<div class="body" id="pHeute">
-  <div class="q"><span class="ql">Was war heute?</span>
-    <div class="tiles" id="art">
-      <button data-k="team" class="on"><span>⚽</span>Mannschaftstraining</button>
-      <button data-k="spiel"><span>🏟️</span>Spiel</button>
-      <button data-k="eigen"><span>💪</span>Eigenes Training</button>
-      <button data-k="pause"><span>😴</span>Ruhetag</button>
-    </div></div>
-
-  <div class="card" data-for="team">
-    <h3>Mannschaftstraining</h3>
-    <span class="n">Warst du heute beim Mannschaftstraining?</span>
-    <div class="chips three yn" id="teamYN"><button data-v="ja">Ja</button><button data-v="nein">Nein</button><button data-v="faellt_aus">Fällt aus</button></div>
-  </div>
-
-  <div class="card" data-for="pause" hidden>
-    <h3>Ruhetag</h3>
-    <span class="n">Heute bewusst Pause gemacht?</span>
-    <div class="chips three yn" id="pauseYN"><button data-v="ja">Ja</button><button data-v="nein">Nein</button></div>
-  </div>
-
-  <div class="card" data-for="spiel" hidden>
-    <h3>Spiel</h3>
-    <div class="row"><span class="n">Gespielt</span><b id="spMinV">0 min</b></div>
-    <input type="range" id="spMin" min="0" max="90" step="5" value="0" aria-label="Spielminuten">
-    <div class="ex"><span class="n">Tore</span><div class="step" id="tore" data-v="0" data-u=""><button>−</button><b>0</b><button>+</button></div></div>
-    <div class="ex"><span class="n">Vorlagen</span><div class="step" id="vorl" data-v="0" data-u=""><button>−</button><b>0</b><button>+</button></div></div>
-  </div>
-
-  <div class="card" data-for="eigen" hidden>
-    <h3>Eigenes Training</h3>
-    <div class="ex"><span class="n">Stabi-Übungen</span><div class="step mins" data-k="stabi" data-v="0" data-u=" min"><button>−</button><b>0 min</b><button>+</button></div></div>
-    <div class="ex"><span class="n">Ball / Technik</span><div class="step mins" data-k="ball" data-v="0" data-u=" min"><button>−</button><b>0 min</b><button>+</button></div></div>
-    <div class="ex"><span class="n">Lauf</span><div class="step mins" data-k="lauf" data-v="0" data-u=" min"><button>−</button><b>0 min</b><button>+</button></div></div>
-    <div class="ex"><span class="n">Kraft</span><div class="step mins" data-k="kraft" data-v="0" data-u=" min"><button>−</button><b>0 min</b><button>+</button></div></div>
-    <div class="ex"><span class="n">Dehnen</span><div class="step mins" data-k="dehnen" data-v="0" data-u=" min"><button>−</button><b>0 min</b><button>+</button></div></div>
-    <div class="sum"><span>Zusammen</span><span id="sumV">0 min</span></div>
-  </div>
-
-  <div class="q"><span class="ql">Wie fühlst du dich?</span>
-    <div class="chips single" id="gef"><button data-v="1">😫</button><button data-v="2">😕</button><button data-v="3">😐</button><button data-v="4">🙂</button><button data-v="5">😄</button></div></div>
-  <div class="q"><div class="row"><span class="ql">Schlaf letzte Nacht</span><b id="schlafV">8,0 h</b></div>
-    <input type="range" id="schlaf" min="4" max="11" step="0.5" value="8" aria-label="Schlaf in Stunden"></div>
-</div>
-
-<div class="body" id="pWoche" hidden></div>
-<button class="send" id="sendBtn">Senden</button>
 
 <script>
+// Mini-App Check-in (Version 2). Wochendaten kommen vom Bot im Adress-Anker (#w=...), bleiben auf dem Handy.
 document.addEventListener('gesturestart',e=>e.preventDefault());
 const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();}
 const $=id=>document.getElementById(id);
-const heute=new Date();
-$('datum').textContent=heute.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
+const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
+const heuteDatum=new Date();
 
-$('art').querySelectorAll('button').forEach(b=>b.onclick=()=>{
-  $('art').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.card[data-for]').forEach(c=>c.hidden=c.dataset.for!==b.dataset.k);
-});
-const val=id=>document.querySelector('#'+id+' .on')?.dataset.v||null;
-function total(){let t=0;document.querySelectorAll('.step.mins').forEach(s=>t+=+s.dataset.v);return t}
-function marks(){
-  const set=(k,v)=>$('art').querySelector(`[data-k=${k}]`).classList.toggle('done',!!v);
-  set('team',val('teamYN'));set('pause',val('pauseYN')==='ja');
-  set('spiel',+$('spMin').value>0);set('eigen',total()>0);
-  $('sumV').textContent=total()+' min';
-  $('sendBtn').disabled=!(val('teamYN')||val('pauseYN')==='ja'||+$('spMin').value>0||total()>0);
+let W=null;
+try{const m=location.hash.match(/[#&]w=([^&]+)/);if(m)W=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(_){}
+if(!W||W.v!==2)W=null;
+const NAME=(W&&W.n)||'';
+const KW=(W&&W.kw)||'';
+const TODAY=W&&Number.isInteger(W.heute)?W.heute:(heuteDatum.getDay()+6)%7;
+const ZIEL={stabiTage:(W&&W.ziel)||4};
+const HASVW=!!(W&&W.vw);
+const vw=(W&&W.vw)||{};
+const VORWOCHE={spielmin:vw.m||0,tore:vw.t||0,vorl:vw.v||0,stabiTage:vw.st||0,stabiMin:vw.sm||0,eigen:vw.e||0};
+const HIST=((W&&W.h)||[]).map(x=>({kw:x.kw,min:x.m||0,tore:x.t||0,vorl:x.v||0,stabi:x.st||0,sp:x.sp}));
+const ROLLEN={s:'start',e:'ein',b:'bank'};
+// Tag aus dem Anker in die Form der Anzeige bringen
+const week=Array.from({length:7},(_,i)=>{const d=W&&W.t&&W.t[i];if(!d)return null;
+  const e=d.e||[];
+  return {team:d.tm||null,ruhe:!!d.ru,
+    spiel:d.sp?{rolle:ROLLEN[d.sp.r]||d.sp.r||null,min:d.sp.m||0,tore:d.sp.t||0,vorl:d.sp.v||0,gegner:d.sp.g||''}:null,
+    eigen:{stabi:e[0]||0,ball:e[1]||0,lauf:e[2]||0,kraft:e[3]||0,dehnen:e[4]||0},
+    rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',zeit:d.z||''};});
+
+let f, view='team', dayOpen=true, noteOpen=true;
+const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},rpe:null,gef:null,schlaf:null,notiz:''});
+
+const exRow=([k,n],mins)=>`<div class="ex"><div class="row"><span class="n">${n}</span><b data-v="${k}">0 min</b></div><div class="chips c5" data-k="${k}">${mins.map(m=>`<button data-v="${m}">${m||'–'}</button>`).join('')}</div></div>`;
+$('ex').innerHTML=exRow(EX[0],[0,10,15,20,30])+`<button class="more" id="more" aria-expanded="false">+ Weiteres Training (Ball, Lauf, Kraft, Dehnen)</button><div id="moreBox" class="q" hidden>${EX.slice(1).map(x=>exRow(x,[0,15,30,45,60])).join('')}</div>`;
+$('more').onclick=()=>{const o=$('moreBox').hidden;$('moreBox').hidden=!o;$('more').setAttribute('aria-expanded',o);$('more').textContent=o?'− Weniger anzeigen':'+ Weiteres Training (Ball, Lauf, Kraft, Dehnen)'};
+$('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
+
+const DATUM=heuteDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+function load(){
+  const d=week[TODAY]; f=blank();
+  view='team';dayOpen=true;noteOpen=true;
+  $('doneBox').hidden=!d;$('form').hidden=!!d;$('send').hidden=!!d;
+  if(d)$('doneTxt').textContent=d.zeit?`Gesendet um ${d.zeit} Uhr. Danke!`:'Danke!';
+  render();
 }
-document.querySelectorAll('.step').forEach(s=>{
-  const [minus,,plus]=s.children, d=s.classList.contains('mins')?5:1;
-  const show=()=>{s.children[1].textContent=s.dataset.v+s.dataset.u;marks();};
-  minus.onclick=()=>{s.dataset.v=Math.max(0,+s.dataset.v-d);show()};
-  plus.onclick=()=>{s.dataset.v=Math.min(300,+s.dataset.v+d);show()};
-});
-document.querySelectorAll('.chips').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{
-  const was=b.classList.contains('on');
-  g.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-  if(!was)b.classList.add('on');marks();}));
-$('spMin').oninput=e=>{$('spMinV').textContent=e.target.value+' min';marks()};
-$('schlaf').oninput=e=>$('schlafV').textContent=(+e.target.value).toFixed(1).replace('.',',')+' h';
-
-function tab(h){$('pHeute').hidden=!h;$('pWoche').hidden=h;$('sendBtn').hidden=!h;$('tHeute').classList.toggle('on',h);$('tWoche').classList.toggle('on',!h)}
-$('tHeute').onclick=()=>tab(true);$('tWoche').onclick=()=>tab(false);
-
-// Wochenübersicht kommt vom Bot im Adress-Anker (#w=...), bleibt auf dem Handy
-function woche(){
-  let w=null;
-  try{const m=location.hash.match(/w=([^&]+)/);if(m)w=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));}catch(e){}
-  const p=$('pWoche');
-  if(!w){p.innerHTML='<p class="empty">Noch keine Woche eingetragen.<br>Nach deinem ersten Check-in siehst du hier deine Übersicht.</p>';return;}
-  const cats=[['Stabi-Übungen','--accent'],['Ball / Technik','--accent2'],['Lauf','--blue'],['Kraft','--muted'],['Dehnen','--line']];
-  const days=['Mo','Di','Mi','Do','Fr','Sa','So'];
-  const max=Math.max(30,...(w.tage||[]).map(t=>t.reduce((a,b)=>a+b,0)));
-  p.innerHTML=`<div class="stats">
-    <div class="stat"><b>${w.team||0}×</b><small>Mannschaftstraining</small></div>
-    <div class="stat"><b>${w.spiele||0}</b><small>Spiel${w.spiele==1?'':'e'}, ${w.spielmin||0} min</small></div>
-    <div class="stat"><b>${w.eigen||0} min</b><small>eigenes Training</small></div>
-    <div class="stat"><b>${w.serie||0} 🔥</b><small>Tage in Folge</small></div></div>
-    <span class="ql">Eigenes Training pro Tag</span>
-    <div class="week">${days.map((d,i)=>`<div class="col"><div class="stack">${((w.tage||[])[i]||[]).map((m,j)=>m?`<i style="height:${m/max*110}px;background:var(${cats[j][1]})"></i>`:'').join('')}</div>${d}</div>`).join('')}</div>
-    <div class="legend">${cats.map(([n,c])=>`<span><i style="background:var(${c})"></i>${n}</span>`).join('')}</div>
-    ${w.ziel?`<div class="goal"><span class="ql">Wochenziel</span><b></b><div class="track"><i style="width:${Math.min(100,(w.zielIst||0)/(w.zielSoll||1)*100)}%"></i></div><small style="color:var(--muted)">${w.zielIst||0} von ${w.zielSoll||0} geschafft</small></div>`:''}`;
-  if(w.ziel)p.querySelector('.goal b').textContent=w.ziel;
+function pick(group,v){group.querySelectorAll('button').forEach(b=>b.classList.toggle('on',v!=null&&b.dataset.v==String(v)))}
+const eSum=()=>Object.values(f.eigen).reduce((a,b)=>a+b,0);
+function has(k){return k==='team'?!!f.team:k==='ruhe'?f.ruhe==='ja':k==='spiel'?!!f.rolle:eSum()>0}
+const dayDone=()=>f.rpe!=null||f.gef!=null||f.schlaf!=null;
+function render(){
+  $('art').querySelectorAll('button').forEach(b=>{b.classList.toggle('on',b.dataset.k===view);b.classList.toggle('done',has(b.dataset.k))});
+  document.querySelectorAll('.card[data-for]').forEach(c=>c.hidden=c.dataset.for!==view);
+  pick($('teamYN'),f.team);pick($('ruheYN'),f.ruhe);pick($('rolle'),f.rolle);
+  $('minBox').hidden=f.rolle==='bank';
+  $('spMin').value=f.spMin;$('spMinV').textContent=f.spMin+' min';
+  document.querySelectorAll('.step').forEach(s=>s.children[1].textContent=f[s.dataset.k]);
+  $('gegner').value=f.gegner;
+  EX.forEach(([k])=>{pick(document.querySelector(`.chips[data-k=${k}]`),f.eigen[k]);document.querySelector(`b[data-v=${k}]`).textContent=f.eigen[k]+' min'});
+  pick($('rpe'),f.rpe);pick($('gef'),f.gef);
+  const closed=!dayOpen&&dayDone();$('dayBox').hidden=closed;$('daySum').hidden=!closed;
+  if(closed)$('daySumT').textContent=[f.rpe!=null?'Anstrengung '+f.rpe:'',f.gef!=null?['😫','😕','😐','🙂','😄'][f.gef-1]:'',f.schlaf!=null?f.schlaf.toFixed(1).replace('.',',')+' h Schlaf':''].filter(Boolean).join(' · ');
+  const nc=!noteOpen&&!!f.notiz.trim();$('noteBox').hidden=nc;$('noteSum').hidden=!nc;
+  if(nc)$('noteSumT').textContent='„'+(f.notiz.trim().length>28?f.notiz.trim().slice(0,28)+'…':f.notiz.trim())+'“';
+  if(f.schlaf==null){$('schlafV').innerHTML='<span class="ghost">nicht angegeben</span>';$('schlaf').value=8;$('schlafHint').hidden=false}
+  else{$('schlafV').textContent=f.schlaf.toFixed(1).replace('.',',')+' h';$('schlaf').value=f.schlaf;$('schlafHint').hidden=true}
+  $('notiz').value=f.notiz;
+  $('send').disabled=!['team','spiel','eigen','ruhe'].some(has);
 }
-woche();marks();
+$('art').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;view=b.dataset.k;if(dayDone())dayOpen=false;if(f.notiz.trim())noteOpen=false;render();};
+$('dayEdit').onclick=()=>{dayOpen=true;render()};
+$('noteEdit').onclick=()=>{noteOpen=true;render()};
+$('teamYN').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.team=f.team===b.dataset.v?null:b.dataset.v;render()};
+$('ruheYN').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.ruhe=f.ruhe===b.dataset.v?null:b.dataset.v;render()};
+$('rolle').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rolle=f.rolle===b.dataset.v?null:b.dataset.v;
+  if(f.rolle==='bank'){f.spMin=0;f.tore=0;f.vorl=0}else if(f.rolle==='start'&&!f.spMin)f.spMin=80;render();};
+$('spMin').oninput=ev=>{f.spMin=+ev.target.value;$('spMinV').textContent=f.spMin+' min'};
+document.querySelectorAll('.step').forEach(s=>{s.children[0].onclick=()=>{f[s.dataset.k]=Math.max(0,f[s.dataset.k]-1);render()};s.children[2].onclick=()=>{f[s.dataset.k]=Math.min(20,f[s.dataset.k]+1);render()}});
+$('gegner').oninput=ev=>f.gegner=ev.target.value;
+$('ex').onclick=ev=>{const b=ev.target.closest('.chips button');if(!b)return;f.eigen[b.parentNode.dataset.k]=+b.dataset.v;render()};
+$('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
+$('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
+$('schlaf').oninput=ev=>{f.schlaf=+ev.target.value;render()};
+$('notiz').oninput=ev=>f.notiz=ev.target.value;
 
-// c1-team-ruhetag-spielmin-tore-vorlagen-stabi-ball-lauf-kraft-dehnen-gefuehl-schlaf*10 (max. 64 Zeichen)
+let tt;
+function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(tt);tt=setTimeout(()=>$('toast').hidden=true,2500)}
+
+function daten(){
+  const sp=f.rolle?{rolle:f.rolle,min:f.rolle==='bank'?0:f.spMin,tore:f.tore,vorlagen:f.vorl,gegner:f.gegner.trim().slice(0,60)}:null;
+  return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},
+    anstrengung:f.rpe,gefuehl:f.gef,schlaf:f.schlaf,notiz:f.notiz.trim().slice(0,500)};
+}
+// Kurzform für den Knopf in der Nachricht (Telegram-Startcode, max. 64 Zeichen, ohne Freitext):
+// c2-<team j/n/f/x><ruhe 0/1><rolle s/e/b/x>-min-tore-vorl-stabi-ball-lauf-kraft-dehnen-anstr-gef-schlaf*10 (x = leer)
 function kurz(d){
-  const s=d.spiel||{min:0,tore:0,vorlagen:0}, z=n=>Math.max(0,Math.min(999,Math.round(+n||0)));
-  return ['c1',{ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x',d.ruhetag?1:0,z(s.min),z(s.tore),z(s.vorlagen),
-    ...['stabi','ball','lauf','kraft','dehnen'].map(k=>z(d.eigen[k])),z(d.gefuehl),z(d.schlaf*10)].join('-');
+  const z=n=>n==null?'x':Math.max(0,Math.min(999,Math.round(+n||0))), s=d.spiel||{};
+  return ['c2',({ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x')+(d.ruhetag?1:0)+({start:'s',ein:'e',bank:'b'}[s.rolle]||'x'),
+    z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-');
 }
-$('sendBtn').onclick=()=>{
-  if($('sendBtn').disabled)return;
-  const eigen={};document.querySelectorAll('.step.mins').forEach(s=>eigen[s.dataset.k]=+s.dataset.v);
-  const d={v:1,typ:'checkin',
-    team:val('teamYN'), ruhetag:val('pauseYN')==='ja',
-    spiel:+$('spMin').value>0?{min:+$('spMin').value,tore:+$('tore').dataset.v,vorlagen:+$('vorl').dataset.v}:null,
-    eigen, gefuehl:val('gef')?+val('gef'):null, schlaf:+$('schlaf').value};
-  // Knopf in der Nachricht (Inline): sendData geht dort nicht, deshalb kurzer Start-Code an den Bot.
+$('send').onclick=()=>{
+  if($('send').disabled)return;
+  const d=daten();
   const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
-  if(tg&&q&&!bot){$('sendBtn').textContent='Fehler: Bot-Adresse fehlt';return;}
-  if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);}
-  else if(tg&&tg.sendData){tg.sendData(JSON.stringify(d));}
-  else{$('sendBtn').textContent='Nur in Telegram möglich';}
+  if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
+  if(tg&&q&&bot){
+    if(d.notiz||(d.spiel&&d.spiel.gegner))toast('Gegner und Zusatzinfo gehen nur über den Knopf unten im Chat.');
+    setTimeout(()=>{tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);},d.notiz||(d.spiel&&d.spiel.gegner)?1500:0);
+    return;}
+  $('send').textContent=tg&&q?'Fehler: Bot-Adresse fehlt':'Nur in Telegram möglich';
 };
+function sumUp(){
+  const s={team:0,spiele:[],spielmin:0,tore:0,vorl:0,stabiTage:0,stabiMin:0,eigen:0,last:0,schlafKurz:[],gefTief:[],notizen:[],rpe:[]};
+  week.forEach((d,i)=>{if(!d)return;
+    if(d.team==='ja')s.team++;
+    if(d.spiel){s.spiele.push([i,d.spiel]);s.spielmin+=d.spiel.min;s.tore+=d.spiel.tore;s.vorl+=d.spiel.vorl}
+    if(d.eigen.stabi>0){s.stabiTage++;s.stabiMin+=d.eigen.stabi}
+    const em=Object.values(d.eigen).reduce((a,b)=>a+b,0);s.eigen+=em;
+    if(d.schlaf!=null&&d.schlaf<7)s.schlafKurz.push(i);
+    if(d.gef!=null&&d.gef<=2)s.gefTief.push(i);
+    if(d.notiz)s.notizen.push([i,d.notiz]);
+    if(d.rpe)s.rpe.push(d.rpe);
+  });
+  return s;
+}
+const delta=(a,b,u='')=>{if(!HASVW)return '';const d=a-b,U=Math.abs(d)===1&&u===' Tage'?' Tag':u;return d>0?`<span class="delta up">▲ ${d}${U} zur Vorwoche</span>`:d<0?`<span class="delta down">▼ ${-d}${U} zur Vorwoche</span>`:`<span class="delta same">● wie Vorwoche</span>`};
+const tor=n=>n===1?'Tor':'Tore', vorl=n=>n===1?'Vorlage':'Vorlagen';
+function strip(){return `<div class="strip">${DAYS.map((d,i)=>{const w=week[i];const yes=w&&w.eigen.stabi>0;return `<div class="${yes?'yes':''} ${i===TODAY?'today':''}"><small>${d}</small><span>${yes?'✓':w?'–':'·'}</span><small>${yes?w.eigen.stabi+"'":''}</small></div>`}).join('')}</div>`}
+function dayLog(){
+  const rows=week.map((d,i)=>{if(!d)return '';const p=[];
+    if(d.ruhe)p.push('Ruhetag');if(d.team==='ja')p.push('Mannschaftstraining');if(d.team==='faellt_aus')p.push('Training fiel aus');
+    if(d.spiel){const r={start:'Startelf',ein:'eingewechselt',bank:'nicht gespielt'}[d.spiel.rolle]||'Spiel';p.push(`<b>Spiel</b>${d.spiel.gegner?' gegen '+esc(d.spiel.gegner):''}: ${r}${d.spiel.rolle!=='bank'?`, ${d.spiel.min} min, ${d.spiel.tore} ${tor(d.spiel.tore)}, ${d.spiel.vorl} ${vorl(d.spiel.vorl)}`:''}`)}
+    EX.forEach(([k,n])=>{if(d.eigen[k])p.push(`${n} ${d.eigen[k]} min`)});
+    return `<tr><td>${DAYS[i]}</td><td>${p.join(' · ')||'–'}</td><td>${d.rpe?'Anstr. '+d.rpe:''}</td></tr>`}).join('');
+  return rows?`<table class="log">${rows}</table>`:'<p class="empty">Noch nichts eingetragen.</p>';
+}
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderWoche(){
+  const s=sumUp(), V=VORWOCHE, plus=[];
+  if(s.tore>V.tore)plus.push(['⚽',`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr als letzte Woche`]);
+  if(s.vorl>V.vorl)plus.push(['🎯',`${s.vorl-V.vorl} ${vorl(s.vorl-V.vorl)} mehr als letzte Woche`]);
+  if(s.stabiMin>V.stabiMin)plus.push(['💪',`${s.stabiMin-V.stabiMin} min mehr Stabi als letzte Woche`]);
+  if(s.spielmin>V.spielmin)plus.push(['⏱️',`${s.spielmin-V.spielmin} Spielminuten mehr als letzte Woche`]);
+  if(s.eigen>V.eigen)plus.push(['🏃',`${s.eigen-V.eigen} min mehr eigenes Training`]);
+  if(!HASVW)plus.length=0;
+  const scorer=s.tore+s.vorl;
+  const hero=scorer?{big:`${s.tore} ${tor(s.tore)} · ${s.vorl} ${vorl(s.vorl)}`,txt:scorer>1?'Starke Woche, du warst an '+scorer+' Toren beteiligt!':'Du hast ein Tor vorbereitet oder erzielt. Weiter so!'}
+    :s.stabiTage>=ZIEL.stabiTage?{big:'Ziel geschafft',txt:`${s.stabiTage} Tage Stabi. Genau so!`}
+    :{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:'Tage Stabi. Du bist auf Kurs!'};
+  const rest=Math.max(0,ZIEL.stabiTage-s.stabiTage), pct=Math.min(100,s.stabiTage/ZIEL.stabiTage*100);
+    $('pWoche').innerHTML=`
+  <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
+    <small class="heroline">${s.spielmin} Spielminuten · ${s.stabiMin} min Stabi · ${s.eigen} min eigenes Training</small></div>
+  ${plus.length?`<section><span class="ql">Besser als letzte Woche</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
+  <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`Noch ${rest} ${rest===1?'Tag':'Tage'}!`:'Geschafft ✓'}</span></div>
+  ${strip()}</section>
+  <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>`;
+}
+function renderBerater(){
+  const s=sumUp(), a=[];
+  if(s.schlafKurz.length>=2)a.push(['bad',`${s.schlafKurz.length} Nächte unter 7 Stunden (${s.schlafKurz.map(i=>DAYS[i]).join(', ')})`]);
+  if(s.gefTief.length>=2)a.push(['bad',`Befinden ${s.gefTief.length}× schlecht (${s.gefTief.map(i=>DAYS[i]).join(', ')})`]);
+  if(s.notizen.length)a.push(['warn',`${s.notizen.length} Zusatzinfo${s.notizen.length>1?'s':''} von ${esc(NAME)}, siehe unten`]);
+  if(s.stabiTage<ZIEL.stabiTage)a.push(['warn',`Stabi ${s.stabiTage} von ${ZIEL.stabiTage} Tagen, noch ${ZIEL.stabiTage-s.stabiTage} offen`]);
+  else a.push(['ok',`Stabi-Ziel geschafft (${s.stabiTage} von ${ZIEL.stabiTage})`]);
+  const avg=s.rpe.length?s.rpe.reduce((x,y)=>x+y,0)/s.rpe.length:0;
+  if(avg>=8)a.push(['warn',`Hohe Anstrengung, Schnitt ${avg.toFixed(1).replace('.',',')} von 10`]);
+  const fehlt=DAYS.slice(0,TODAY).filter((_,i)=>!week[i]);
+  if(fehlt.length)a.push(['warn',`Kein Eintrag: ${fehlt.join(', ')}`]);
+  const spiele=s.spiele.length?s.spiele.map(([i,sp])=>`<tr><td>${DAYS[i]}</td><td>${sp.gegner?'gegen '+esc(sp.gegner)+' · ':''}${{start:'Startelf',ein:'Eingewechselt',bank:'Nicht gespielt'}[sp.rolle]||'Spiel'}</td><td>${sp.min} min · ${sp.tore} ${tor(sp.tore)} · ${sp.vorl} ${vorl(sp.vorl)}</td></tr>`).join(''):'';
+  $('pBerater').innerHTML=`
+  <section><span class="ql">${esc(NAME)}${KW?' · KW '+KW:''}</span>
+  <div class="stats">
+    <div class="stat"><b>${s.spielmin} min</b><small>Spielminuten</small>${delta(s.spielmin,VORWOCHE.spielmin,' min')}</div>
+    <div class="stat"><b>${s.tore}</b><small>${tor(s.tore)}</small>${delta(s.tore,VORWOCHE.tore)}</div>
+    <div class="stat"><b>${s.vorl}</b><small>${vorl(s.vorl)}</small>${delta(s.vorl,VORWOCHE.vorl)}</div>
+    <div class="stat"><b>${s.stabiTage} von ${ZIEL.stabiTage}</b><small>Tage Stabi zu Hause</small>${delta(s.stabiTage,VORWOCHE.stabiTage,' Tage')}</div>
+  </div></section>
+  <section><span class="ql">Worauf achten</span>
+  <div class="alert">${a.slice(0,4).map(([c,t])=>`<div><i class="dot" style="background:var(--${c})"></i><span>${t}</span></div>`).join('')}</div></section>
+  <section><span class="ql">Spiele</span>${spiele?`<table class="log">${spiele}</table>`:'<p class="hint">Noch kein Spiel eingetragen.</p>'}</section>
+  <section><span class="ql">Stabi zu Hause</span>${strip()}</section>
+  ${charts(s)}
+  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t])=>`<div class="quote">${DAYS[i]}: ${esc(t)}</div>`).join('')}</section>`:''}
+  <section><span class="ql">Außerdem</span><p class="hint" style="margin:0">${s.team}× Mannschaftstraining · ${s.eigen} min eigenes Training · Anstrengung im Schnitt ${avg?avg.toFixed(1).replace('.',','):'–'} von 10</p></section>`;
+}
+
+// Diagramme im Überblick: einfache Säulen, eine Farbe, Werte direkt beschriftet, Tooltip per <title>
+function bars({vals,labels,max,ref,refLbl,fmt,tips,hi}){
+  const W=340,H=150,top=22,bot=22,n=vals.length,bw=Math.min(34,(W-20)/n-12),step=(W-20)/n;
+  const y=v=>top+(H-top-bot)*(1-v/max);
+  let g=`<svg viewBox="0 0 ${W} ${H}" class="chart" role="img">`;
+  g+=`<line x1="10" x2="${W-10}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)" stroke-width="1"/>`;
+  if(ref!=null)g+=`<line x1="10" x2="${W-10}" y1="${y(ref)}" y2="${y(ref)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/><text x="${W-10}" y="${y(ref)-5}" text-anchor="end" class="ct">${refLbl}</text>`;
+  vals.forEach((v,i)=>{const cx=10+step*i+step/2,x=cx-bw/2,yy=y(Math.max(v,0)),h=y(0)-yy;
+    g+=`<g><title>${tips[i]}</title><rect x="${cx-step/2}" y="${top}" width="${step}" height="${H-top-bot}" fill="transparent"/>`;
+    if(v>0)g+=`<path d="M${x},${y(0)} V${yy+4} Q${x},${yy} ${x+4},${yy} H${x+bw-4} Q${x+bw},${yy} ${x+bw},${yy+4} V${y(0)} Z" fill="${(typeof hi==='function'?hi(v,i):i===hi)?'var(--accent)':'var(--soft)'}"/>`;
+    g+=`<text x="${cx}" y="${yy-6}" text-anchor="middle" class="cv">${fmt(v,i)}</text><text x="${cx}" y="${H-6}" text-anchor="middle" class="ct">${labels[i]}</text></g>`;});
+  return g+'</svg>';
+}
+function charts(s){
+  const all=[...HIST,{kw:KW,min:s.spielmin,tore:s.tore,vorl:s.vorl,stabi:s.stabiTage,sp:s.spiele.filter(([,x])=>x.rolle!=='bank').length}];
+  const lab=all.map(w=>'KW '+w.kw), last=all.length-1;
+  const saison=all.reduce((a,w)=>({min:a.min+w.min,tore:a.tore+w.tore,vorl:a.vorl+w.vorl,sp:a.sp+(w.sp!=null?w.sp:(w.min>0?1:0))}),{min:0,tore:0,vorl:0,sp:0});
+  const c1=bars({vals:all.map(w=>w.min),labels:lab,max:100,hi:last,fmt:(v,i)=>v?v+"'":'–',
+    tips:all.map(w=>`KW ${w.kw}: ${w.min} min, ${w.tore} ${tor(w.tore)}, ${w.vorl} ${vorl(w.vorl)}`)});
+  const tv=all.map(w=>(w.tore?'⚽'.repeat(w.tore):'')+(w.vorl?'🎯'.repeat(w.vorl):'')||'·');
+  const c2=bars({vals:all.map(w=>w.stabi),labels:lab,max:Math.max(5,...all.map(w=>w.stabi)),ref:ZIEL.stabiTage,refLbl:'Ziel '+ZIEL.stabiTage,hi:last,fmt:v=>v,
+    tips:all.map(w=>`KW ${w.kw}: ${w.stabi} Tage Stabi`)});
+  const sl=week.map(d=>d&&d.schlaf!=null?d.schlaf:0);
+  const c3=bars({vals:sl,labels:DAYS,max:10,ref:7,refLbl:'7 h',hi:v=>v>0&&v<7,fmt:(v,i)=>v?v.toFixed(1).replace('.',','):'',
+    tips:week.map((d,i)=>`${DAYS[i]}: ${d&&d.schlaf!=null?d.schlaf.toFixed(1).replace('.',',')+' h':'kein Wert'}`)});
+  const gef=week.map(d=>d&&d.gef?['😫','😕','😐','🙂','😄'][d.gef-1]:'·');
+  return `<section><span class="ql">Bisher (${all.length} ${all.length===1?'Woche':'Wochen'})</span><div class="season"><div><b>${saison.sp}</b><small>Spiele</small></div><div><b>${saison.min}</b><small>Minuten</small></div><div><b>${saison.tore}</b><small>${tor(saison.tore)}</small></div><div><b>${saison.vorl}</b><small>${vorl(saison.vorl)}</small></div></div></section>
+  <section><span class="ql">Spielminuten pro Woche</span>${c1}<div class="under" style="grid-template-columns:repeat(${tv.length},1fr)">${tv.map(t=>`<span>${t}</span>`).join('')}</div><span class="hint">⚽ Tor · 🎯 Vorlage · aktuelle Woche dunkelrot</span></section>
+  <section><span class="ql">Stabi-Tage pro Woche</span>${c2}</section>
+  <section><span class="ql">Schlaf und Befinden diese Woche</span>${c3}<div class="under c7d">${gef.map(t=>`<span>${t}</span>`).join('')}</div><span class="hint">Dunkelrot: unter 7 Stunden (gestrichelte Linie)</span></section>`;
+}
+
+const TITLES={ein:NAME?'Hallo '+NAME:'Mein Training',woche:'Meine Woche',berater:NAME?NAME+' im Überblick':'Überblick'};
+const WOCHE=W&&W.von?`${W.von} bis ${W.bis}`:'Diese Woche';
+document.querySelector('.tabs').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const t=b.dataset.t;
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  $('pEin').hidden=t!=='ein';$('pWoche').hidden=t!=='woche';$('pBerater').hidden=t!=='berater';$('send').hidden=t!=='ein'||!!week[TODAY];
+  $('title').textContent=TITLES[t];
+  if(t==='woche')renderWoche();if(t==='berater')renderBerater();
+  $('sub').textContent=t==='ein'?DATUM:WOCHE;
+};
+if(W&&W.ub){document.querySelector('[data-t=berater]').hidden=false;document.querySelector('.tabs').classList.remove('two');}
+$('title').textContent=TITLES.ein;$('sub').textContent=DATUM;
+if(location.hash.match(/[#&]tab=woche/))document.querySelector('[data-t=woche]').click();
+load();
 </script>
 </body>
 </html>
