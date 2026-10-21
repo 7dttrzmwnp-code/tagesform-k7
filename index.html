@@ -251,6 +251,13 @@ const week=Array.from({length:7},(_,i)=>{const d=W&&W.t&&W.t[i];if(!d)return nul
     rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',voice:!!d.nv,zeit:d.z||''};});
 // Grober Abgleich Formular gegen Notiz (Rolle, Tore, Vorlagen), nur als Hinweis für den Überblick
 const ZAHL={ein:1,eins:1,eine:1,einen:1,einem:1,zwei:2,drei:3,vier:4,'fünf':5};
+// Stichworte in Notizen, die der Berater sofort sehen soll
+function stichworte(t){
+  t=(t||'').toLowerCase();const k=[];
+  if(/(schmerz|verletz|knöchel|knie|zerrung|schlag auf|umgeknickt|prellung|krank|fieber)/.test(t))k.push('Schmerz/Verletzung erwähnt');
+  if(/(gelbe karte|gelb-rot|gelbrot|rote karte|platzverweis)/.test(t))k.push('Karte erwähnt');
+  return k;
+}
 function widerspruch(d){
   if(!d||!d.spiel||!d.notiz)return [];
   const t=d.notiz.toLowerCase(),sp=d.spiel,w=[];
@@ -258,7 +265,10 @@ function widerspruch(d){
   const zahl=re=>{const m=t.match(re);return m?n(m[1]):null};
   const tz=zahl(/(\d+|eine[nm]?|eins|ein|zwei|drei|vier|fünf)\s+(?:tor|tore|torer|treffer)\b/);
   const vz=zahl(/(\d+|eine[nm]?|eins|ein|zwei|drei|vier|fünf)\s+vorlagen?\b/);
-  if(/eingewechselt/.test(t)&&sp.rolle==='start')w.push('Formular Startelf, Notiz eingewechselt');
+  const ein=/(eingewechselt|reingekommen|reingekommen|kam rein|bin rein|eingewechselt worden|nach der halbzeit (rein|gekommen))/.test(t);
+  if(ein&&sp.rolle==='start')w.push('Formular Startelf, Notiz eingewechselt');
+  const mz=zahl(/(\d+)\s*min(?:uten|\.)?\s+(?:gespielt|auf dem platz|spielzeit)/);
+  if(mz!=null&&sp.rolle!=='bank'&&Math.abs(mz-sp.min)>=10)w.push(`Formular ${sp.min} min, Notiz ${mz} min`);
   if(/(startelf|von anfang|von beginn)/.test(t)&&sp.rolle==='ein')w.push('Formular eingewechselt, Notiz Startelf');
   if(tz!=null&&tz!==sp.tore)w.push(`Formular ${sp.tore} ${sp.tore===1?'Tor':'Tore'}, Notiz ${tz}`);
   if(vz!=null&&vz!==sp.vorl)w.push(`Formular ${sp.vorl} ${sp.vorl===1?'Vorlage':'Vorlagen'}, Notiz ${vz}`);
@@ -399,6 +409,7 @@ function renderBerater(){
   const s=sumUp(), a=[];
   if(s.schlafKurz.length>=2)a.push(['bad',`${s.schlafKurz.length} Nächte unter 7 Stunden (${s.schlafKurz.map(i=>DAYS[i]).join(', ')})`]);
   if(s.gefTief.length>=2)a.push(['bad',`Befinden ${s.gefTief.length}× schlecht (${s.gefTief.map(i=>DAYS[i]).join(', ')})`]);
+  week.forEach((d,i)=>{const k=d&&stichworte(d.notiz);if(k&&k.length)a.push([k[0].startsWith('Schmerz')?'bad':'warn',`${DAYS[i]}: ${k.join(', ')}, siehe Zusatzinfo`]);});
   s.widerspruch.forEach(([i,w])=>a.push(['warn',`${DAYS[i]}: passt nicht zusammen (${w.join('; ')}), bitte nachfragen`]));
   if(s.notizen.length)a.push(['warn',`${s.notizen.length} Zusatzinfo${s.notizen.length>1?'s':''} von ${esc(NAME)}, siehe unten`]);
   if(s.stabiTage<ZIEL.stabiTage)a.push(['warn',`Stabi ${s.stabiTage} von ${ZIEL.stabiTage} Tagen, noch ${ZIEL.stabiTage-s.stabiTage} offen`]);
