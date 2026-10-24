@@ -45,7 +45,9 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .q{display:flex;flex-direction:column;gap:8px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tiles button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:12px;padding:12px 8px;font:700 .95rem var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
-.tiles button span{font-size:1.3rem}
+.tiles button span{font-size:1.3rem;display:grid;place-items:center;height:30px}
+.ico{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:-.22em}
+.tiles .ico{width:26px;height:26px}
 .tiles button{position:relative}
 .tiles button.on{border-color:var(--accent);background:var(--accent);color:var(--accentfg)}
 .tiles button.done::after{content:"✓";position:absolute;top:5px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--accent);font-size:.8rem;display:grid;place-items:center;border:1.5px solid var(--accent)}
@@ -157,14 +159,14 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
   </div>
 
   <div class="body" id="pEin">
-    <div class="done" id="doneBox" hidden><b>Heute erledigt ✅</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
+    <div class="done" id="doneBox" hidden><b>Heute erledigt ✓</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
     <div id="form">
     <div class="q"><span class="ql">Was war?</span>
       <div class="tiles" id="art">
-        <button data-k="team"><span>⚽</span>Mannschafts&shy;training</button>
-        <button data-k="spiel"><span>🏟️</span>Spiel</button>
-        <button data-k="eigen"><span>💪</span>Stabi &amp; Eigenes</button>
-        <button data-k="ruhe"><span>😴</span>Ruhetag</button>
+        <button data-k="team"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg></span>Mannschafts&shy;training</button>
+        <button data-k="spiel"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg></span>Spiel</button>
+        <button data-k="eigen"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg></span>Stabi &amp; Eigenes</button>
+        <button data-k="ruhe"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg></span>Ruhetag</button>
       </div></div>
 
     <div class="card" data-for="team" hidden>
@@ -211,7 +213,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
     </div>
 
     <div class="daysum" id="noteSum" hidden><span><b>Zusatzinfo ✓</b> <span id="noteSumT"></span></span><button class="link" id="noteEdit">Ändern</button></div>
-    <div class="daysum chathint" id="chatHint"><span>💬 Gegner oder Zusatzinfo fragt dich der Bot nach dem Senden im Chat. Schreib kurz oder schick eine Sprachnachricht 🎤</span></div>
+    <div class="daysum chathint" id="chatHint"><span>Gegner oder Zusatzinfo fragt dich der Bot nach dem Senden im Chat. Schreib kurz oder schick eine Sprachnachricht.</span></div>
     <div class="q" id="noteBox"><span class="ql">Zusatzinfos (freiwillig)</span>
       <textarea id="notiz" placeholder="z. B. Knie zwickt, Trainer hat Position gewechselt"></textarea></div>
     </div>
@@ -229,6 +231,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 document.addEventListener('gesturestart',e=>e.preventDefault());
 const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(_){}}
 const $=id=>document.getElementById(id);
+const ICO={"team": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg>`, "spiel": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg>`, "eigen": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg>`, "ruhe": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>`, "tor": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7h18v11M3 11h18M8 7v11M16 7v11"/></svg>`, "vorl": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L18 6M12 6h6v6"/></svg>`, "zeit": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/></svg>`, "lauf": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h4l3-6 4 8 2-4h3"/></svg>`, "serie": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l5-5 4 4 7-7M14 8h6v6"/></svg>`, "best": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 21l4.5-2.5 4.5 2.5-1.5-7.5"/></svg>`, "check": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, "mic": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>`, "chat": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>`};
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
 const heuteDatum=new Date();
@@ -400,11 +403,11 @@ const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 
 function renderWoche(){
   const s=sumUp(), V=VGL, plus=[];
-  if(s.tore>V.tore)plus.push(['⚽',`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr`]);
-  if(s.vorl>V.vorl)plus.push(['🎯',`${s.vorl-V.vorl} ${vorl(s.vorl-V.vorl)} mehr`]);
-  if(s.stabiMin>V.stabiMin)plus.push(['💪',`${s.stabiMin-V.stabiMin} min mehr Stabi`]);
-  if(s.spielmin>V.spielmin)plus.push(['⏱️',`${s.spielmin-V.spielmin} Spielminuten mehr`]);
-  if(s.eigen>V.eigen)plus.push(['🏃',`${s.eigen-V.eigen} min mehr eigenes Training`]);
+  if(s.tore>V.tore)plus.push([ICO.tor,`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr`]);
+  if(s.vorl>V.vorl)plus.push([ICO.vorl,`${s.vorl-V.vorl} ${vorl(s.vorl-V.vorl)} mehr`]);
+  if(s.stabiMin>V.stabiMin)plus.push([ICO.eigen,`${s.stabiMin-V.stabiMin} min mehr Stabi`]);
+  if(s.spielmin>V.spielmin)plus.push([ICO.zeit,`${s.spielmin-V.spielmin} Spielminuten mehr`]);
+  if(s.eigen>V.eigen)plus.push([ICO.lauf,`${s.eigen-V.eigen} min mehr eigenes Training`]);
   if(!HASVW)plus.length=0;
   const scorer=s.tore+s.vorl;
   const hero=scorer?{big:`${s.tore} ${tor(s.tore)} · ${s.vorl} ${vorl(s.vorl)}`,txt:scorer>1?'Starke Woche, du warst an '+scorer+' Toren beteiligt!':'Du hast ein Tor vorbereitet oder erzielt. Weiter so!'}
@@ -417,8 +420,8 @@ function renderWoche(){
   if(BEST.m>0&&s.spielmin>BEST.m)best.push(`${s.spielmin} Spielminuten in einer Woche`);
   if(BEST.tv>0&&s.tore+s.vorl>BEST.tv)best.push(`an ${s.tore+s.vorl} Toren beteiligt in einer Woche`);
   const ser=[];
-  if(SERIE.wz>=2)ser.push(`<div><b>🔥 ${SERIE.wz}</b><small>Wochen in Folge Stabi-Ziel</small></div>`);
-  if(SERIE.tg>=3)ser.push(`<div><b>✅ ${SERIE.tg}</b><small>Tage in Folge eingetragen</small></div>`);
+  if(SERIE.wz>=2)ser.push(`<div><b>${ICO.serie} ${SERIE.wz}</b><small>Wochen in Folge Stabi-Ziel</small></div>`);
+  if(SERIE.tg>=3)ser.push(`<div><b>${ICO.check} ${SERIE.tg}</b><small>Tage in Folge eingetragen</small></div>`);
   let saison='';
   if(SAISON){const up=[];
     if(SVOR&&SHALB){const H=SHALB;if((H.t||0)>(SVOR.t||0))up.push(`${H.t-(SVOR.t||0)} ${tor(H.t-(SVOR.t||0))}`);if((H.v||0)>(SVOR.v||0))up.push(`${H.v-(SVOR.v||0)} ${vorl(H.v-(SVOR.v||0))}`);if((H.st||0)>(SVOR.st||0))up.push(`${H.st-(SVOR.st||0)} Stabi-Tage`)}
@@ -427,7 +430,7 @@ function renderWoche(){
     $('pWoche').innerHTML=`
   <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
     <small class="heroline">${s.spielmin} Spielminuten · ${s.stabiMin} min Stabi · ${s.eigen} min eigenes Training</small></div>
-  ${best.length?`<div class="best">🏅 Neuer Bestwert: ${best[0]}</div>`:''}
+  ${best.length?`<div class="best">${ICO.best} Neuer Bestwert: ${best[0]}</div>`:''}
   ${plus.length?`<section><span class="ql">Besser als ${VGLTXT}</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
   <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`Noch ${rest} ${rest===1?'Tag':'Tage'}!`:'Geschafft ✓'}</span></div>
   ${strip()}</section>
@@ -462,7 +465,7 @@ function renderBerater(){
   <section><span class="ql">Spiele</span>${spiele?`<table class="log">${spiele}</table>`:'<p class="hint">Noch kein Spiel eingetragen.</p>'}</section>
   <section><span class="ql">Stabi zu Hause</span>${strip()}</section>
   ${charts(s)}
-  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t,v])=>{const k=`<span class="nzday">${v?'🎤 ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('')}</section>`:''}
+  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('')}</section>`:''}
   <section><span class="ql">Außerdem</span><p class="hint" style="margin:0">${s.team}× Mannschaftstraining · ${s.eigen} min eigenes Training · Anstrengung im Schnitt ${avg?avg.toFixed(1).replace('.',','):'–'} von 10</p></section>`;
 }
 
