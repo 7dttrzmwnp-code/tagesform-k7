@@ -399,6 +399,7 @@ function dayLog(){
     return `<tr><td>${DAYS[i]}</td><td>${p.join(' · ')||'–'}</td><td>${d.rpe?'Anstr. '+d.rpe:''}</td></tr>`}).join('');
   return rows?`<table class="log">${rows}</table>`:'<p class="empty">Noch nichts eingetragen.</p>';
 }
+const nzList=L=>L.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('');
 const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function renderWoche(){
@@ -436,6 +437,7 @@ function renderWoche(){
   ${strip()}</section>
   ${ser.length?`<div class="streak">${ser.join('')}</div>`:''}
   ${saison}
+  ${s.notizen.length?`<section><span class="ql">Deine Zusatzinfos</span>${nzList(s.notizen)}</section>`:''}
   <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>`;
 }
 function renderBerater(){
@@ -465,7 +467,7 @@ function renderBerater(){
   <section><span class="ql">Spiele</span>${spiele?`<table class="log">${spiele}</table>`:'<p class="hint">Noch kein Spiel eingetragen.</p>'}</section>
   <section><span class="ql">Stabi zu Hause</span>${strip()}</section>
   ${charts(s)}
-  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${s.notizen.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('')}</section>`:''}
+  ${s.notizen.length?`<section><span class="ql">Zusatzinfos von ${esc(NAME)}</span>${nzList(s.notizen)}</section>`:''}
   <section><span class="ql">Außerdem</span><p class="hint" style="margin:0">${s.team}× Mannschaftstraining · ${s.eigen} min eigenes Training · Anstrengung im Schnitt ${avg?avg.toFixed(1).replace('.',','):'–'} von 10</p></section>`;
 }
 
