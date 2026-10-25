@@ -67,10 +67,15 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .ucat small{color:var(--muted);font-weight:600;white-space:nowrap}
 .ucat.open{background:var(--accent);color:var(--accentfg)}.ucat.open small{color:inherit;opacity:.85}
 .usub{padding:2px 0 4px}
-.ur{display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--accent);padding:4px 0 4px 10px}
-.ur .nm{font-weight:700}.ur .nm small{font-weight:400;color:var(--muted)}
-.ul{display:flex;flex-wrap:wrap;gap:8px 12px}
-.ul .step b{min-width:52px;font-size:1.1rem}
+.uc.act{background:var(--bg);color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.uc.sm{padding:6px 0;min-width:44px;text-align:center}
+.ued{border:2px solid var(--accent);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.ued .nm{font:700 1.15rem var(--display);text-transform:uppercase;letter-spacing:.03em}
+.uf{display:flex;flex-direction:column;gap:6px}
+.uf .step b{min-width:56px;font-size:1.15rem}
+.ued .link{align-self:flex-start;font-size:.85rem;color:var(--muted)}
+.ur{border:0;border-left:3px solid var(--accent);background:none;color:var(--fg);display:flex;justify-content:space-between;gap:8px;padding:6px 0 6px 10px;font:600 .92rem var(--body);text-align:left;cursor:pointer;width:100%}
+.ur small{color:var(--muted);white-space:nowrap}
 .ex .row b{font-variant-numeric:tabular-nums}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .row b{font:700 1.3rem var(--display)}
@@ -248,9 +253,9 @@ const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],[
 // Übungskatalog: Platz in der Liste = feste ID, nur hinten anfügen (gleiche Liste in uebungen.json für den Bot)
 // Einheit: s = Sätze × Sekunden, w = Sätze × Wiederholungen, k = Sätze × Wiederholungen mit Kilo, m = Minuten
 const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Lauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Lauf sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"]];
-const ueNeu=id=>({s:{id,s:3,v:30},w:{id,s:3,v:10},k:{id,s:3,v:10,kg:20},m:{id,v:15}})[UE[id][2]];
+const ueNeu=id=>UE[id][2]==='m'?{id,v:0}:UE[id][2]==='k'?{id,s:0,v:0,kg:0}:{id,s:0,v:0};
 // Minuten für die Wochenübersicht: Sätze × (Belastung + 60 s Pause), eine Wiederholung zählt 3 s
-const ueMin=u=>{const e=UE[u.id][2];return e==='m'?u.v:Math.max(1,Math.round(u.s*((e==='s'?u.v:u.v*3)+60)/60))};
+const ueMin=u=>{const e=UE[u.id][2];return e==='m'?u.v:u.s&&u.v?Math.max(1,Math.round(u.s*((e==='s'?u.v:u.v*3)+60)/60)):0};
 // Kurzcode je Übung in Base36 ohne Trenner: ID 2 Zeichen, dann Minuten 2 (m) oder Sätze 1 + Wert 2 (+ Kilo 2 bei k)
 const b36=(n,w)=>Math.max(0,Math.min(36**w-1,Math.round(n))).toString(36).padStart(w,'0');
 const ueCode=L=>L.map(u=>{const e=UE[u.id][2];return b36(u.id,2)+(e==='m'?b36(u.v,2):b36(u.s,1)+b36(u.v,2)+(e==='k'?b36(u.kg,2):''))}).join('');
@@ -321,22 +326,22 @@ function widerspruch(d){
 let f, view='team', dayOpen=true, noteOpen=true;
 const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},ue:[],rpe:null,gef:null,schlaf:null,notiz:''});
 
-// Zuletzt benutzt: vom Bot im Anker (zu), sonst vom Handy gemerkt
-let ZU=(W&&Array.isArray(W.zu)&&W.zu)||[];
-if(!ZU.length){try{ZU=JSON.parse(localStorage.getItem('zu')||'[]')}catch(_){ZU=[]}}
-ZU=ZU.filter(i=>UE[i]).slice(0,6);if(!ZU.length)ZU=[0,1];
-let ueOpen=null;
-const STEP={s:1,kg:5};
+let ueOpen=null, ueAct=null;
+const MAX={s:20,v:999,kg:300};
+const ueStep=(u,k)=>k==='s'?1:k==='kg'?5:UE[u.id][2]==='w'||UE[u.id][2]==='k'?1:5;
+// Schnellauswahl je Feld, feiner mit − und +
+const QUICK={s:[1,2,3,4,5],sek:[15,20,30,45,60],wdh:[5,8,10,12,15,20],kg:[5,10,20,30,40,50],min:[5,10,15,20,30,45]};
+function ueEdit(u){const e=UE[u.id][2];
+  const feld=(k,lab,unit,q)=>`<div class="uf"><div class="row"><span class="ql">${lab}</span><div class="step"><button data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${u[k]}${unit}</b><button data-f="${k}" data-d="1" aria-label="mehr">+</button></div></div><div class="uz">${q.map(n=>`<button class="uc sm${u[k]===n?' on':''}" data-f="${k}" data-set="${n}">${n}</button>`).join('')}</div></div>`;
+  const f2=e==='m'?feld('v','Minuten',' min',QUICK.min):feld('s','Sätze','',QUICK.s)+feld('v',e==='s'?'Sekunden je Satz':'Wiederholungen',e==='s'?' s':'',e==='s'?QUICK.sek:QUICK.wdh)+(e==='k'?feld('kg','Gewicht',' kg',QUICK.kg):'');
+  return `<div class="ued"><div class="row"><b class="nm">${esc(UE[u.id][0])}</b><span class="hint">${ueMin(u)?'etwa '+ueMin(u)+' min':''}</span></div>${f2}<button class="link" data-weg="${u.id}">Übung entfernen</button></div>`}
 function renderEx(){
-  const sel=new Set(f.ue.map(u=>u.id)), chip=i=>`<button class="uc${sel.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
-  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
-    return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>`:''}`}).join('');
-  const st=(j,k,t)=>`<div class="step"><button data-j="${j}" data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${t}</b><button data-j="${j}" data-f="${k}" data-d="1" aria-label="mehr">+</button></div>`;
-  const rows=f.ue.map((u,j)=>{const e=UE[u.id][2];
-    const line=e==='m'?st(j,'v',u.v+' min'):st(j,'s',u.s+' ×')+st(j,'v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st(j,'kg',u.kg+' kg'):'');
-    return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div></div>`}).join('');
-  $('ex').innerHTML=`<span class="ql">Zuletzt benutzt</span><div class="uz">${ZU.map(chip).join('')}</div>${cats}
-    ${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rows}`:'<span class="hint">Bereich antippen und Übungen wählen.</span>'}`;
+  const done=new Set(f.ue.filter(u=>ueMin(u)>0).map(u=>u.id));
+  const chip=i=>`<button class="uc${i===ueAct?' act':done.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
+  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>done.has(i)).length,o=ueOpen===k,a=f.ue.find(u=>u.id===ueAct&&UE[u.id][1]===k);
+    return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gemacht · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>${a?ueEdit(a):''}`:''}`}).join('');
+  const L=f.ue.filter(u=>ueMin(u)>0);
+  $('ex').innerHTML=`${cats}${L.length?`<span class="ql">Gemacht · etwa ${eSum()} min</span>${L.map(u=>`<button class="ur" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`).join('')}`:'<span class="hint">Bereich antippen, dann die Übung.</span>'}`;
 }
 function ueSync(){const e={stabi:0,ball:0,lauf:0,kraft:0,dehnen:0};f.ue.forEach(u=>e[UE[u.id][1]]+=ueMin(u));f.eigen=e}
 $('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
@@ -383,16 +388,16 @@ $('spMin').oninput=ev=>{f.spMin=+ev.target.value;$('spMinV').textContent=f.spMin
 document.querySelectorAll('.step').forEach(s=>{s.children[0].onclick=()=>{f[s.dataset.k]=Math.max(0,f[s.dataset.k]-1);render()};s.children[2].onclick=()=>{f[s.dataset.k]=Math.min(20,f[s.dataset.k]+1);render()}});
 $('gegner').oninput=ev=>f.gegner=ev.target.value;
 $('ex').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const d=b.dataset;
-  if(d.cat)ueOpen=ueOpen===d.cat?null:d.cat;
-  else if(d.ue!=null){const id=+d.ue,j=f.ue.findIndex(u=>u.id===id);
-    if(j>=0)f.ue.splice(j,1);
-    else{f.ue.push(ueNeu(id));ueSync();
-      // Knopf in der Nachricht: alles muss in 64 Zeichen Startcode passen
-      if(INLINE&&kurz(daten()).length>64){f.ue.pop();toast('Mehr passt nicht in eine Meldung. Rest bitte im Chat schreiben.')}}}
-  else if(d.j!=null){const u=f.ue[+d.j],e=UE[u.id][2],k=d.f,old=u[k];
-    const step=k==='v'?(e==='m'||e==='s'?5:1):STEP[k];u[k]=Math.min(k==='s'?35:k==='kg'?1295:e==='m'?240:999,u[k]+(+d.d)*step);
-    if(u[k]<=0&&(k==='s'||e==='m'))f.ue.splice(+d.j,1);else if(u[k]<(k==='kg'?0:1))u[k]=old;
+  if(d.cat){ueOpen=ueOpen===d.cat?null:d.cat;ueAct=null}
+  else if(d.ue!=null){const id=+d.ue;ueAct=ueAct===id?null:id;
+    if(ueAct!=null&&!f.ue.some(u=>u.id===id))f.ue.push(ueNeu(id))}
+  else if(d.go!=null){const id=+d.go;ueOpen=UE[id][1];ueAct=id}
+  else if(d.weg!=null){f.ue=f.ue.filter(u=>u.id!==+d.weg);ueAct=null}
+  else if(d.f){const u=f.ue.find(x=>x.id===ueAct);if(!u)return;const k=d.f,old=u[k];
+    u[k]=d.set!=null?+d.set:Math.max(0,Math.min(MAX[k],u[k]+(+d.d)*ueStep(u,k)));
     ueSync();if(INLINE&&kurz(daten()).length>64){u[k]=old;toast('Mehr passt nicht in eine Meldung.')}}
+  // Übungen, die noch komplett auf 0 stehen, fallen beim Weiterspringen raus
+  f.ue=f.ue.filter(u=>u.id===ueAct||ueMin(u)>0);
   ueSync();render()};
 $('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
 $('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
@@ -418,7 +423,6 @@ function kurz(d){
 $('send').onclick=()=>{
   if($('send').disabled)return;
   const d=daten();
-  try{localStorage.setItem('zu',JSON.stringify([...new Set([...f.ue.map(u=>u.id),...ZU])].slice(0,6)))}catch(_){}
   const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
