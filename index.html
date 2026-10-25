@@ -12,13 +12,13 @@
 :root{
   --bg:#ffffff; --fg:#1b1f1d; --muted:#67706b; --line:#dde1dd; --chip:#f0f2f0; --page:#e9e7e7;
   --accent:#8e1b32; --accentfg:#ffffff; --accent2:#3a3a3e; --blue:#2a8bd0; --soft:#9aa4a0;
-  --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e;
+  --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e; --c-ball:#8d939b; --c-lauf:#5c6168; --c-kraft:#b9bec5; --c-dehnen:#e3c3ca;
   --head:linear-gradient(135deg,#7a1028 0%,#3d0a16 55%,#111113 100%); --headfg:#ffffff;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;--c-ball:#8a8a92;--c-lauf:#62626a;--c-kraft:#b8b8c0;--c-dehnen:#ead3d8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;--c-ball:#8a8a92;--c-lauf:#62626a;--c-kraft:#b8b8c0;--c-dehnen:#ead3d8;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:var(--page);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4}
 .app{max-width:440px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;padding-bottom:96px}
@@ -136,6 +136,15 @@ section{display:flex;flex-direction:column;gap:8px}
 .streak b{font:700 1.5rem var(--display);font-variant-numeric:tabular-nums;line-height:1.1}
 .streak small{color:var(--muted);font-size:.75rem}
 .best{background:var(--chip);border-left:4px solid var(--accent);border-radius:8px;padding:8px 10px;font-weight:600}
+.tr{background:var(--chip);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.tr .big{font:700 1.9rem/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tr .bb{display:grid;grid-template-columns:96px 1fr 50px;align-items:center;gap:8px;font-size:.9rem}
+.tr .bb .t{height:8px;background:var(--bg);border-radius:4px;overflow:hidden}.tr .bb .t i{display:block;height:100%;border-radius:0 4px 4px 0}
+.tr .bb b{text-align:right;font-variant-numeric:tabular-nums}.tr .bb small{color:var(--muted);font-weight:400}
+.tr .leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.75rem;color:var(--muted)}.tr .leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
+.tr svg{width:100%;height:auto;display:block}.tr svg text{font-family:var(--body)}
+.tr .ax{font-size:11px;fill:var(--muted);font-weight:600}.tr .val{font-size:11px;fill:var(--fg);font-weight:700}
+.tr details{font-size:.82rem}.tr table{width:100%;border-collapse:collapse;margin-top:6px}.tr td,.tr th{padding:3px 2px;border-bottom:1px solid var(--line);text-align:right}.tr td:first-child,.tr th:first-child{text-align:left}
 .upline{color:var(--ok);font-weight:700;font-size:.85rem}
 
 .chathint{display:none}
@@ -286,7 +295,7 @@ const VGL=vb?{spielmin:vb.m||0,tore:vb.t||0,vorl:vb.v||0,stabiTage:vb.st||0,stab
 const VGLTXT=vb&&TODAY<6?`bis ${DAYL[TODAY]} letzte Woche`:'letzte Woche';
 // Halbserien-Vergleich: laufende Halbserie (sh) gegen die ganze letzte (sl), nie die Saison gegen eine Halbserie
 const SAISON=W&&W.sa, SHALB=W&&W.sh, SVOR=W&&W.sl, SERIE=(W&&W.sr)||{}, BEST=(W&&W.bw)||{};
-const HIST=((W&&W.h)||[]).map(x=>({kw:x.kw,min:x.m||0,tore:x.t||0,vorl:x.v||0,stabi:x.st||0,sp:x.sp}));
+const HIST=((W&&W.h)||[]).map(x=>({be:x.be||null,kw:x.kw,min:x.m||0,tore:x.t||0,vorl:x.v||0,stabi:x.st||0,sp:x.sp}));
 const ROLLEN={s:'start',e:'ein',b:'bank'};
 // Tag aus dem Anker in die Form der Anzeige bringen
 const week=Array.from({length:7},(_,i)=>{const d=W&&W.t&&W.t[i];if(!d)return null;
@@ -455,6 +464,41 @@ function dayLog(){
 }
 const nzList=L=>L.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('');
 
+// Dein Training: Minuten je Bereich (Wochensumme), pro Tag gestapelt, Stabi über die Wochen
+const BKEY=EX.map(x=>x[0]), BNAME={stabi:'Stabi',ball:'Ball / Technik',lauf:'Lauf',kraft:'Kraft',dehnen:'Dehnen'};
+const BCOL={stabi:'var(--accent)',ball:'var(--c-ball)',lauf:'var(--c-lauf)',kraft:'var(--c-kraft)',dehnen:'var(--c-dehnen)'};
+function trainingBlock(s){
+  const sum=k=>week.reduce((a,d)=>a+(d?d.eigen[k]:0),0), tot=BKEY.reduce((a,k)=>a+sum(k),0);
+  if(!tot)return '';
+  const vbe=(W&&W.vb&&W.vb.be)||(W&&W.vw&&W.vw.be)||null, vt=vbe?vbe.reduce((a,b)=>a+b,0):0;
+  const diff=vbe?tot-vt:0, mx=Math.max(...BKEY.map(sum));
+  const bars=BKEY.slice().sort((a,b)=>sum(b)-sum(a)).filter(k=>sum(k)>0).map(k=>`<div class="bb"><span>${BNAME[k]}</span><div class="t"><i style="width:${sum(k)/mx*100}%;background:${BCOL[k]}"></i></div><b>${sum(k)} <small>min</small></b></div>`).join('');
+  // Tage
+  const w=380,h=180,l=26,r=6,t=16,b=24,ih=h-t-b,bw=(w-l-r)/7,dm=Math.max(60,...week.map(d=>d?Object.values(d.eigen).reduce((a,c)=>a+c,0):0)),top=Math.ceil(dm/40)*40;
+  let g=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Minuten pro Tag nach Bereich">`;
+  [0,top/2,top].forEach(v=>{const y=t+ih-v/top*ih;g+=`<line x1="${l}" x2="${w-r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text class="ax" x="${l-5}" y="${y+4}" text-anchor="end">${v}</text>`});
+  DAYS.forEach((dn,i)=>{const d=week[i],x=l+i*bw+bw*.2,bwid=bw*.6;let y0=t+ih,tt=0;
+    if(d)BKEY.forEach(k=>{const v=d.eigen[k];if(!v)return;tt+=v;const hh=Math.max(2,v/top*ih-2);y0-=hh+2;g+=`<rect x="${x}" y="${y0}" width="${bwid}" height="${hh}" rx="3" fill="${BCOL[k]}"><title>${dn} · ${BNAME[k]}: ${v} min</title></rect>`});
+    g+=tt?`<text class="val" x="${x+bwid/2}" y="${y0-4}" text-anchor="middle">${tt}</text>`:`<rect x="${x}" y="${t+ih-2}" width="${bwid}" height="2" rx="1" fill="var(--line)"/>`;
+    g+=`<text class="ax" x="${x+bwid/2}" y="${h-7}" text-anchor="middle">${dn}</text>`});
+  g+='</svg>';
+  // Stabi über die Wochen (nur mit Minuten vom Bot)
+  const ws=[...HIST.filter(x=>x.be).map(x=>({kw:x.kw,v:x.be[0],ok:x.stabi>=ZIEL.stabiTage})),{kw:KW,v:sum('stabi'),ok:s.stabiTage>=ZIEL.stabiTage,cur:true}];
+  let wk='';
+  if(ws.length>=2){const mw=Math.max(60,...ws.map(x=>x.v)),topw=Math.ceil(mw/40)*40,bw2=(w-l-r)/ws.length,h2=170,ih2=h2-t-b;
+    wk=`<svg viewBox="0 0 ${w} ${h2}" role="img" aria-label="Stabi-Minuten pro Woche">`;
+    [0,topw/2,topw].forEach(v=>{const y=t+ih2-v/topw*ih2;wk+=`<line x1="${l}" x2="${w-r}" y1="${y}" y2="${y}" stroke="var(--line)"/><text class="ax" x="${l-5}" y="${y+4}" text-anchor="end">${v}</text>`});
+    ws.forEach((x,i)=>{const xx=l+i*bw2+bw2*.2,bwid=bw2*.6,hh=x.v/topw*ih2,y=t+ih2-hh;
+      wk+=x.v?`<rect x="${xx}" y="${y}" width="${bwid}" height="${hh}" rx="3" fill="${x.cur?'var(--accent)':'var(--accent)'}" opacity="${x.cur?1:.45}"><title>KW ${x.kw}: ${x.v} min Stabi${x.ok?' · Ziel erreicht':''}</title></rect><text class="val" x="${xx+bwid/2}" y="${y-4}" text-anchor="middle">${x.v}</text>`:`<rect x="${xx}" y="${t+ih2-2}" width="${bwid}" height="2" rx="1" fill="var(--line)"/>`;
+      wk+=`<text class="ax" x="${xx+bwid/2}" y="${h2-7}" text-anchor="middle"${x.ok?' style="fill:var(--ok)"':''}>KW ${x.kw}${x.ok?' ✓':''}</text>`});
+    wk+='</svg>'}
+  const tab=`<details><summary class="link">Als Tabelle anzeigen</summary><table><tr><th></th>${DAYS.map(d=>`<th>${d}</th>`).join('')}<th>Σ</th></tr>${BKEY.map(k=>`<tr><td>${BNAME[k]}</td>${DAYS.map((_,i)=>`<td>${week[i]&&week[i].eigen[k]||'–'}</td>`).join('')}<td><b>${sum(k)}</b></td></tr>`).join('')}</table></details>`;
+  return `<section class="tr"><span class="ql">Dein Training diese Woche</span>
+    <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px"><span class="big">${tot} min</span>${vbe?`<span class="${diff>=0?'upline':'hint'}">${diff>0?'▲ '+diff+' min mehr':diff<0?(-diff)+' min weniger':'genau gleich viel'} als ${VGLTXT}</span>`:''}</div>
+    <div style="display:flex;flex-direction:column;gap:8px">${bars}</div>
+    <span class="ql">Minuten pro Tag</span>${g}<div class="leg">${BKEY.map(k=>`<span><i style="background:${BCOL[k]}"></i>${BNAME[k]}</span>`).join('')}</div>
+    ${wk?`<span class="ql">Stabi über die Wochen</span>${wk}<span class="hint">✓ = Wochenziel erreicht</span>`:''}${tab}</section>`;
+}
 function renderWoche(){
   const s=sumUp(), V=VGL, plus=[];
   if(s.tore>V.tore)plus.push([ICO.tor,`${s.tore-V.tore} ${tor(s.tore-V.tore)} mehr`]);
@@ -488,6 +532,7 @@ function renderWoche(){
   ${plus.length?`<section><span class="ql">Besser als ${VGLTXT}</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
   <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`Noch ${rest} ${rest===1?'Tag':'Tage'}!`:'Geschafft ✓'}</span></div>
   ${strip()}</section>
+  ${trainingBlock(s)}
   ${ser.length?`<div class="streak">${ser.join('')}</div>`:''}
   ${saison}
   ${s.notizen.length?`<section><span class="ql">Deine Zusatzinfos</span>${nzList(s.notizen)}</section>`:''}
