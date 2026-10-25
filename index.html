@@ -404,17 +404,16 @@ function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(
 
 function daten(){
   const sp=f.rolle?{rolle:f.rolle,min:f.rolle==='bank'?0:f.spMin,tore:f.tore,vorlagen:f.vorl,gegner:f.gegner.trim().slice(0,60)}:null;
-  return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},u:ueCode(f.ue),
-    uebungen:f.ue.map(u=>({id:u.id,name:UE[u.id][0],...u})),
+  return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},
     anstrengung:f.rpe,gefuehl:f.gef,schlaf:f.schlaf,notiz:f.notiz.trim().slice(0,500)};
 }
 // Kurzform für den Knopf in der Nachricht (Telegram-Startcode, max. 64 Zeichen, ohne Freitext):
-// Übungen hängen mit _ und Kurzcode (ueCode) hinten dran.
+// Übungen werden noch nicht einzeln gespeichert, nur die Minuten je Bereich (ueCode/ueDecode für später).
 // c2-<team j/n/f/x><ruhe 0/1><rolle s/e/b/x>-min-tore-vorl-stabi-ball-lauf-kraft-dehnen-anstr-gef-schlaf*10 (x = leer)
 function kurz(d){
   const z=n=>n==null?'x':Math.max(0,Math.min(999,Math.round(+n||0))), s=d.spiel||{};
   return ['c2',({ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x')+(d.ruhetag?1:0)+({start:'s',ein:'e',bank:'b'}[s.rolle]||'x'),
-    z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-')+(d.u?'_'+d.u:'');
+    z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-');
 }
 $('send').onclick=()=>{
   if($('send').disabled)return;
