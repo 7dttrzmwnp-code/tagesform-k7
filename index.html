@@ -67,15 +67,10 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .ucat small{color:var(--muted);font-weight:600;white-space:nowrap}
 .ucat.open{background:var(--accent);color:var(--accentfg)}.ucat.open small{color:inherit;opacity:.85}
 .usub{padding:2px 0 4px}
-.uc.act{background:var(--bg);color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
-.uc.sm{padding:6px 0;min-width:44px;text-align:center}
-.ued{border:2px solid var(--accent);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
-.ued .nm{font:700 1.15rem var(--display);text-transform:uppercase;letter-spacing:.03em}
-.uf{display:flex;flex-direction:column;gap:6px}
-.uf .step b{min-width:56px;font-size:1.15rem}
-.ued .link{align-self:flex-start;font-size:.85rem;color:var(--muted)}
-.ur{border:0;border-left:3px solid var(--accent);background:none;color:var(--fg);display:flex;justify-content:space-between;gap:8px;padding:6px 0 6px 10px;font:600 .92rem var(--body);text-align:left;cursor:pointer;width:100%}
-.ur small{color:var(--muted);white-space:nowrap}
+.ur{display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--accent);padding:4px 0 4px 10px}
+.ur .nm{font-weight:700}.ur .nm small{font-weight:400;color:var(--muted)}
+.ul{display:flex;flex-wrap:wrap;gap:8px 12px}
+.ul .step b{min-width:52px;font-size:1.1rem}
 .ex .row b{font-variant-numeric:tabular-nums}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .row b{font:700 1.3rem var(--display)}
@@ -326,22 +321,18 @@ function widerspruch(d){
 let f, view='team', dayOpen=true, noteOpen=true;
 const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},ue:[],rpe:null,gef:null,schlaf:null,notiz:''});
 
-let ueOpen=null, ueAct=null;
-const MAX={s:20,v:999,kg:300};
-const ueStep=(u,k)=>k==='s'?1:k==='kg'?5:UE[u.id][2]==='w'||UE[u.id][2]==='k'?1:5;
-// Schnellauswahl je Feld, feiner mit − und +
-const QUICK={s:[1,2,3,4,5],sek:[15,20,30,45,60],wdh:[5,8,10,12,15,20],kg:[5,10,20,30,40,50],min:[5,10,15,20,30,45]};
-function ueEdit(u){const e=UE[u.id][2];
-  const feld=(k,lab,unit,q)=>`<div class="uf"><div class="row"><span class="ql">${lab}</span><div class="step"><button data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${u[k]}${unit}</b><button data-f="${k}" data-d="1" aria-label="mehr">+</button></div></div><div class="uz">${q.map(n=>`<button class="uc sm${u[k]===n?' on':''}" data-f="${k}" data-set="${n}">${n}</button>`).join('')}</div></div>`;
-  const f2=e==='m'?feld('v','Minuten',' min',QUICK.min):feld('s','Sätze','',QUICK.s)+feld('v',e==='s'?'Sekunden je Satz':'Wiederholungen',e==='s'?' s':'',e==='s'?QUICK.sek:QUICK.wdh)+(e==='k'?feld('kg','Gewicht',' kg',QUICK.kg):'');
-  return `<div class="ued"><div class="row"><b class="nm">${esc(UE[u.id][0])}</b><span class="hint">${ueMin(u)?'etwa '+ueMin(u)+' min':''}</span></div>${f2}<button class="link" data-weg="${u.id}">Übung entfernen</button></div>`}
+let ueOpen=null;
+const STEP={s:1,kg:5};
 function renderEx(){
-  const done=new Set(f.ue.filter(u=>ueMin(u)>0).map(u=>u.id));
-  const chip=i=>`<button class="uc${i===ueAct?' act':done.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
-  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>done.has(i)).length,o=ueOpen===k,a=f.ue.find(u=>u.id===ueAct&&UE[u.id][1]===k);
-    return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gemacht · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>${a?ueEdit(a):''}`:''}`}).join('');
-  const L=f.ue.filter(u=>ueMin(u)>0);
-  $('ex').innerHTML=`${cats}${L.length?`<span class="ql">Gemacht · etwa ${eSum()} min</span>${L.map(u=>`<button class="ur" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`).join('')}`:'<span class="hint">Bereich antippen, dann die Übung.</span>'}`;
+  const sel=new Set(f.ue.map(u=>u.id)), chip=i=>`<button class="uc${sel.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
+  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
+    return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>`:''}`}).join('');
+  const st=(j,k,t)=>`<div class="step"><button data-j="${j}" data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${t}</b><button data-j="${j}" data-f="${k}" data-d="1" aria-label="mehr">+</button></div>`;
+  const rows=f.ue.map((u,j)=>{const e=UE[u.id][2];
+    const line=e==='m'?st(j,'v',u.v+' min'):st(j,'s',u.s+' ×')+st(j,'v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st(j,'kg',u.kg+' kg'):'');
+    return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div></div>`}).join('');
+  $('ex').innerHTML=`${cats}
+    ${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rows}`:'<span class="hint">Bereich antippen und Übungen wählen. Nochmal antippen nimmt sie wieder raus.</span>'}`;
 }
 function ueSync(){const e={stabi:0,ball:0,lauf:0,kraft:0,dehnen:0};f.ue.forEach(u=>e[UE[u.id][1]]+=ueMin(u));f.eigen=e}
 $('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
@@ -388,16 +379,12 @@ $('spMin').oninput=ev=>{f.spMin=+ev.target.value;$('spMinV').textContent=f.spMin
 document.querySelectorAll('.step').forEach(s=>{s.children[0].onclick=()=>{f[s.dataset.k]=Math.max(0,f[s.dataset.k]-1);render()};s.children[2].onclick=()=>{f[s.dataset.k]=Math.min(20,f[s.dataset.k]+1);render()}});
 $('gegner').oninput=ev=>f.gegner=ev.target.value;
 $('ex').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const d=b.dataset;
-  if(d.cat){ueOpen=ueOpen===d.cat?null:d.cat;ueAct=null}
-  else if(d.ue!=null){const id=+d.ue;ueAct=ueAct===id?null:id;
-    if(ueAct!=null&&!f.ue.some(u=>u.id===id))f.ue.push(ueNeu(id))}
-  else if(d.go!=null){const id=+d.go;ueOpen=UE[id][1];ueAct=id}
-  else if(d.weg!=null){f.ue=f.ue.filter(u=>u.id!==+d.weg);ueAct=null}
-  else if(d.f){const u=f.ue.find(x=>x.id===ueAct);if(!u)return;const k=d.f,old=u[k];
-    u[k]=d.set!=null?+d.set:Math.max(0,Math.min(MAX[k],u[k]+(+d.d)*ueStep(u,k)));
+  if(d.cat)ueOpen=ueOpen===d.cat?null:d.cat;
+  else if(d.ue!=null){const id=+d.ue,j=f.ue.findIndex(u=>u.id===id);
+    if(j>=0)f.ue.splice(j,1);else f.ue.push(ueNeu(id))}
+  else if(d.j!=null){const u=f.ue[+d.j],e=UE[u.id][2],k=d.f,old=u[k];
+    const step=k==='v'?(e==='m'||e==='s'?5:1):STEP[k];u[k]=Math.max(0,Math.min(k==='s'?35:k==='kg'?1295:e==='m'?240:999,u[k]+(+d.d)*step));
     ueSync();if(INLINE&&kurz(daten()).length>64){u[k]=old;toast('Mehr passt nicht in eine Meldung.')}}
-  // Übungen, die noch komplett auf 0 stehen, fallen beim Weiterspringen raus
-  f.ue=f.ue.filter(u=>u.id===ueAct||ueMin(u)>0);
   ueSync();render()};
 $('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
 $('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
