@@ -60,6 +60,17 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .c7 button,.c10 button{font-size:.82rem;padding:8px 0}
 .chips button.on{border-color:var(--accent);background:var(--accent);color:var(--accentfg)}
 .ex{display:flex;flex-direction:column;gap:6px}
+.uz{display:flex;flex-wrap:wrap;gap:6px}
+.uc{border:0;background:var(--chip);color:var(--fg);border-radius:20px;padding:7px 12px;font:600 .88rem var(--body);cursor:pointer}
+.uc.on{background:var(--accent);color:var(--accentfg)}
+.ucat{border:0;width:100%;background:var(--chip);color:var(--fg);border-radius:12px;padding:11px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font:700 .95rem var(--body);cursor:pointer;text-align:left}
+.ucat small{color:var(--muted);font-weight:600;white-space:nowrap}
+.ucat.open{background:var(--accent);color:var(--accentfg)}.ucat.open small{color:inherit;opacity:.85}
+.usub{padding:2px 0 4px}
+.ur{display:flex;flex-direction:column;gap:6px;border-left:3px solid var(--accent);padding:4px 0 4px 10px}
+.ur .nm{font-weight:700}.ur .nm small{font-weight:400;color:var(--muted)}
+.ul{display:flex;flex-wrap:wrap;gap:8px 12px}
+.ul .step b{min-width:52px;font-size:1.1rem}
 .ex .row b{font-variant-numeric:tabular-nums}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .row b{font:700 1.3rem var(--display)}
@@ -234,6 +245,22 @@ const $=id=>document.getElementById(id);
 const ICO={"team": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg>`, "spiel": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg>`, "eigen": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg>`, "ruhe": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>`, "tor": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7h18v11M3 11h18M8 7v11M16 7v11"/></svg>`, "vorl": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L18 6M12 6h6v6"/></svg>`, "zeit": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/></svg>`, "lauf": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h4l3-6 4 8 2-4h3"/></svg>`, "serie": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l5-5 4 4 7-7M14 8h6v6"/></svg>`, "best": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 21l4.5-2.5 4.5 2.5-1.5-7.5"/></svg>`, "check": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, "mic": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>`, "chat": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>`};
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
 const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
+// Übungskatalog: Platz in der Liste = feste ID, nur hinten anfügen (gleiche Liste in uebungen.json für den Bot)
+// Einheit: s = Sätze × Sekunden, w = Sätze × Wiederholungen, k = Sätze × Wiederholungen mit Kilo, m = Minuten
+const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Lauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Lauf sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"]];
+const ueNeu=id=>({s:{id,s:3,v:30},w:{id,s:3,v:10},k:{id,s:3,v:10,kg:20},m:{id,v:15}})[UE[id][2]];
+// Minuten für die Wochenübersicht: Sätze × (Belastung + 60 s Pause), eine Wiederholung zählt 3 s
+const ueMin=u=>{const e=UE[u.id][2];return e==='m'?u.v:Math.max(1,Math.round(u.s*((e==='s'?u.v:u.v*3)+60)/60))};
+// Kurzcode je Übung in Base36 ohne Trenner: ID 2 Zeichen, dann Minuten 2 (m) oder Sätze 1 + Wert 2 (+ Kilo 2 bei k)
+const b36=(n,w)=>Math.max(0,Math.min(36**w-1,Math.round(n))).toString(36).padStart(w,'0');
+const ueCode=L=>L.map(u=>{const e=UE[u.id][2];return b36(u.id,2)+(e==='m'?b36(u.v,2):b36(u.s,1)+b36(u.v,2)+(e==='k'?b36(u.kg,2):''))}).join('');
+function ueDecode(c){const L=[];let i=0;c=c||'';
+  while(i+4<=c.length){const id=parseInt(c.substr(i,2),36),x=UE[id];if(!x)break;i+=2;
+    if(x[2]==='m'){L.push({id,v:parseInt(c.substr(i,2),36)});i+=2}
+    else{const u={id,s:parseInt(c[i],36),v:parseInt(c.substr(i+1,2),36)};i+=3;if(x[2]==='k'){u.kg=parseInt(c.substr(i,2),36);i+=2}L.push(u)}}
+  return L}
+const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ueTxt=u=>{const [n,,e]=UE[u.id];return e==='m'?`${n} ${u.v} min`:`${n} ${u.s} × ${u.v}${e==='s'?' s':''}${e==='k'?' mit '+u.kg+' kg':''}`};
 const heuteDatum=new Date();
 // Knopf in der Nachricht: nur Zahlen gehen per Startcode, Freitext fragt der Bot danach im Chat ab
 const INLINE=!!(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id);
@@ -264,7 +291,7 @@ const week=Array.from({length:7},(_,i)=>{const d=W&&W.t&&W.t[i];if(!d)return nul
   return {team:d.tm||null,ruhe:!!d.ru,
     spiel:d.sp?{rolle:ROLLEN[d.sp.r]||d.sp.r||null,min:d.sp.m||0,tore:d.sp.t||0,vorl:d.sp.v||0,gegner:d.sp.g||''}:null,
     eigen:{stabi:e[0]||0,ball:e[1]||0,lauf:e[2]||0,kraft:e[3]||0,dehnen:e[4]||0},
-    rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',voice:!!d.nv,zeit:d.z||''};});
+    rpe:d.a||null,gef:d.gf||null,schlaf:d.sl!=null?d.sl:null,notiz:d.nz||'',voice:!!d.nv,zeit:d.z||'',u:d.u||''};});
 // Grober Abgleich Formular gegen Notiz (Rolle, Tore, Vorlagen), nur als Hinweis für den Überblick
 const ZAHL={ein:1,eins:1,eine:1,einen:1,einem:1,zwei:2,drei:3,vier:4,'fünf':5};
 // Stichworte in Notizen, die der Berater sofort sehen soll
@@ -292,11 +319,26 @@ function widerspruch(d){
 }
 
 let f, view='team', dayOpen=true, noteOpen=true;
-const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},rpe:null,gef:null,schlaf:null,notiz:''});
+const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},ue:[],rpe:null,gef:null,schlaf:null,notiz:''});
 
-const exRow=([k,n],mins)=>`<div class="ex"><div class="row"><span class="n">${n}</span><b data-v="${k}">0 min</b></div><div class="chips c5" data-k="${k}">${mins.map(m=>`<button data-v="${m}">${m||'–'}</button>`).join('')}</div></div>`;
-$('ex').innerHTML=exRow(EX[0],[0,10,15,20,30])+`<button class="more" id="more" aria-expanded="false">+ Weiteres Training (Ball, Lauf, Kraft, Dehnen)</button><div id="moreBox" class="q" hidden>${EX.slice(1).map(x=>exRow(x,[0,15,30,45,60])).join('')}</div>`;
-$('more').onclick=()=>{const o=$('moreBox').hidden;$('moreBox').hidden=!o;$('more').setAttribute('aria-expanded',o);$('more').textContent=o?'− Weniger anzeigen':'+ Weiteres Training (Ball, Lauf, Kraft, Dehnen)'};
+// Zuletzt benutzt: vom Bot im Anker (zu), sonst vom Handy gemerkt
+let ZU=(W&&Array.isArray(W.zu)&&W.zu)||[];
+if(!ZU.length){try{ZU=JSON.parse(localStorage.getItem('zu')||'[]')}catch(_){ZU=[]}}
+ZU=ZU.filter(i=>UE[i]).slice(0,6);if(!ZU.length)ZU=[0,1];
+let ueOpen=null;
+const STEP={s:1,kg:5};
+function renderEx(){
+  const sel=new Set(f.ue.map(u=>u.id)), chip=i=>`<button class="uc${sel.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
+  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
+    return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>`:''}`}).join('');
+  const st=(j,k,t)=>`<div class="step"><button data-j="${j}" data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${t}</b><button data-j="${j}" data-f="${k}" data-d="1" aria-label="mehr">+</button></div>`;
+  const rows=f.ue.map((u,j)=>{const e=UE[u.id][2];
+    const line=e==='m'?st(j,'v',u.v+' min'):st(j,'s',u.s+' ×')+st(j,'v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st(j,'kg',u.kg+' kg'):'');
+    return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div></div>`}).join('');
+  $('ex').innerHTML=`<span class="ql">Zuletzt benutzt</span><div class="uz">${ZU.map(chip).join('')}</div>${cats}
+    ${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rows}`:'<span class="hint">Bereich antippen und Übungen wählen.</span>'}`;
+}
+function ueSync(){const e={stabi:0,ball:0,lauf:0,kraft:0,dehnen:0};f.ue.forEach(u=>e[UE[u.id][1]]+=ueMin(u));f.eigen=e}
 $('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
 
 const DATUM=heuteDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
@@ -319,7 +361,7 @@ function render(){
   $('spMin').value=f.spMin;$('spMinV').textContent=f.spMin+' min';
   document.querySelectorAll('.step').forEach(s=>s.children[1].textContent=f[s.dataset.k]);
   $('gegner').value=f.gegner;
-  EX.forEach(([k])=>{pick(document.querySelector(`.chips[data-k=${k}]`),f.eigen[k]);document.querySelector(`b[data-v=${k}]`).textContent=f.eigen[k]+' min'});
+  renderEx();
   pick($('rpe'),f.rpe);pick($('gef'),f.gef);
   const closed=!dayOpen&&dayDone();$('dayBox').hidden=closed;$('daySum').hidden=!closed;
   if(closed)$('daySumT').textContent=[f.rpe!=null?'Anstrengung '+f.rpe:'',f.gef!=null?['😫','😕','😐','🙂','😄'][f.gef-1]:'',f.schlaf!=null?f.schlaf.toFixed(1).replace('.',',')+' h Schlaf':''].filter(Boolean).join(' · ');
@@ -340,7 +382,18 @@ $('rolle').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rolle
 $('spMin').oninput=ev=>{f.spMin=+ev.target.value;$('spMinV').textContent=f.spMin+' min'};
 document.querySelectorAll('.step').forEach(s=>{s.children[0].onclick=()=>{f[s.dataset.k]=Math.max(0,f[s.dataset.k]-1);render()};s.children[2].onclick=()=>{f[s.dataset.k]=Math.min(20,f[s.dataset.k]+1);render()}});
 $('gegner').oninput=ev=>f.gegner=ev.target.value;
-$('ex').onclick=ev=>{const b=ev.target.closest('.chips button');if(!b)return;f.eigen[b.parentNode.dataset.k]=+b.dataset.v;render()};
+$('ex').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const d=b.dataset;
+  if(d.cat)ueOpen=ueOpen===d.cat?null:d.cat;
+  else if(d.ue!=null){const id=+d.ue,j=f.ue.findIndex(u=>u.id===id);
+    if(j>=0)f.ue.splice(j,1);
+    else{f.ue.push(ueNeu(id));ueSync();
+      // Knopf in der Nachricht: alles muss in 64 Zeichen Startcode passen
+      if(INLINE&&kurz(daten()).length>64){f.ue.pop();toast('Mehr passt nicht in eine Meldung. Rest bitte im Chat schreiben.')}}}
+  else if(d.j!=null){const u=f.ue[+d.j],e=UE[u.id][2],k=d.f,old=u[k];
+    const step=k==='v'?(e==='m'||e==='s'?5:1):STEP[k];u[k]=Math.min(k==='s'?35:k==='kg'?1295:e==='m'?240:999,u[k]+(+d.d)*step);
+    if(u[k]<=0&&(k==='s'||e==='m'))f.ue.splice(+d.j,1);else if(u[k]<(k==='kg'?0:1))u[k]=old;
+    ueSync();if(INLINE&&kurz(daten()).length>64){u[k]=old;toast('Mehr passt nicht in eine Meldung.')}}
+  ueSync();render()};
 $('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
 $('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
 $('schlaf').oninput=ev=>{f.schlaf=+ev.target.value;render()};
@@ -351,19 +404,22 @@ function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(
 
 function daten(){
   const sp=f.rolle?{rolle:f.rolle,min:f.rolle==='bank'?0:f.spMin,tore:f.tore,vorlagen:f.vorl,gegner:f.gegner.trim().slice(0,60)}:null;
-  return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},
+  return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},u:ueCode(f.ue),
+    uebungen:f.ue.map(u=>({id:u.id,name:UE[u.id][0],...u})),
     anstrengung:f.rpe,gefuehl:f.gef,schlaf:f.schlaf,notiz:f.notiz.trim().slice(0,500)};
 }
 // Kurzform für den Knopf in der Nachricht (Telegram-Startcode, max. 64 Zeichen, ohne Freitext):
+// Übungen hängen mit _ und Kurzcode (ueCode) hinten dran.
 // c2-<team j/n/f/x><ruhe 0/1><rolle s/e/b/x>-min-tore-vorl-stabi-ball-lauf-kraft-dehnen-anstr-gef-schlaf*10 (x = leer)
 function kurz(d){
   const z=n=>n==null?'x':Math.max(0,Math.min(999,Math.round(+n||0))), s=d.spiel||{};
   return ['c2',({ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x')+(d.ruhetag?1:0)+({start:'s',ein:'e',bank:'b'}[s.rolle]||'x'),
-    z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-');
+    z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-')+(d.u?'_'+d.u:'');
 }
 $('send').onclick=()=>{
   if($('send').disabled)return;
   const d=daten();
+  try{localStorage.setItem('zu',JSON.stringify([...new Set([...f.ue.map(u=>u.id),...ZU])].slice(0,6)))}catch(_){}
   const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
@@ -395,12 +451,11 @@ function dayLog(){
   const rows=week.map((d,i)=>{if(!d)return '';const p=[];
     if(d.ruhe)p.push('Ruhetag');if(d.team==='ja')p.push('Mannschaftstraining');if(d.team==='faellt_aus')p.push('Training fiel aus');
     if(d.spiel){const r={start:'Startelf',ein:'eingewechselt',bank:'nicht gespielt'}[d.spiel.rolle]||'Spiel';p.push(`<b>Spiel</b>${d.spiel.gegner?' gegen '+esc(d.spiel.gegner):''}: ${r}${d.spiel.rolle!=='bank'?`, ${d.spiel.min} min, ${d.spiel.tore} ${tor(d.spiel.tore)}, ${d.spiel.vorl} ${vorl(d.spiel.vorl)}`:''}`)}
-    EX.forEach(([k,n])=>{if(d.eigen[k])p.push(`${n} ${d.eigen[k]} min`)});
+    if(d.u)p.push(ueDecode(d.u).map(u=>esc(ueTxt(u))).join(', '));else EX.forEach(([k,n])=>{if(d.eigen[k])p.push(`${n} ${d.eigen[k]} min`)});
     return `<tr><td>${DAYS[i]}</td><td>${p.join(' · ')||'–'}</td><td>${d.rpe?'Anstr. '+d.rpe:''}</td></tr>`}).join('');
   return rows?`<table class="log">${rows}</table>`:'<p class="empty">Noch nichts eingetragen.</p>';
 }
 const nzList=L=>L.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('');
-const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function renderWoche(){
   const s=sumUp(), V=VGL, plus=[];

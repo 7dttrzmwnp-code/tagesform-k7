@@ -1,0 +1,218 @@
+[
+{
+"id": 0,
+"name": "Plank",
+"bereich": "stabi",
+"einheit": "s"
+},
+{
+"id": 1,
+"name": "Seitstütz",
+"bereich": "stabi",
+"einheit": "s"
+},
+{
+"id": 2,
+"name": "Glute Bridge",
+"bereich": "stabi",
+"einheit": "w"
+},
+{
+"id": 3,
+"name": "Bird Dog",
+"bereich": "stabi",
+"einheit": "w"
+},
+{
+"id": 4,
+"name": "Dead Bug",
+"bereich": "stabi",
+"einheit": "w"
+},
+{
+"id": 5,
+"name": "Copenhagen",
+"bereich": "stabi",
+"einheit": "s"
+},
+{
+"id": 6,
+"name": "Superman",
+"bereich": "stabi",
+"einheit": "w"
+},
+{
+"id": 7,
+"name": "Einbeinstand",
+"bereich": "stabi",
+"einheit": "s"
+},
+{
+"id": 8,
+"name": "Stabi sonstiges",
+"bereich": "stabi",
+"einheit": "m"
+},
+{
+"id": 9,
+"name": "Jonglieren",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 10,
+"name": "Passen an die Wand",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 11,
+"name": "Dribbling Hütchen",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 12,
+"name": "Schusstraining",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 13,
+"name": "Ballannahme",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 14,
+"name": "Kopfball",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 15,
+"name": "Ball sonstiges",
+"bereich": "ball",
+"einheit": "m"
+},
+{
+"id": 16,
+"name": "Lockerer Lauf",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 17,
+"name": "Intervalle",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 18,
+"name": "Sprints",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 19,
+"name": "Koordinationsleiter",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 20,
+"name": "Tempoläufe",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 21,
+"name": "Lauf sonstiges",
+"bereich": "lauf",
+"einheit": "m"
+},
+{
+"id": 22,
+"name": "Beinpresse",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 23,
+"name": "Kniebeuge",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 24,
+"name": "Ausfallschritt",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 25,
+"name": "Liegestütz",
+"bereich": "kraft",
+"einheit": "w"
+},
+{
+"id": 26,
+"name": "Klimmzug",
+"bereich": "kraft",
+"einheit": "w"
+},
+{
+"id": 27,
+"name": "Wadenheben",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 28,
+"name": "Nordic Hamstring",
+"bereich": "kraft",
+"einheit": "w"
+},
+{
+"id": 29,
+"name": "Kraft sonstiges",
+"bereich": "kraft",
+"einheit": "m"
+},
+{
+"id": 30,
+"name": "Hüftbeuger",
+"bereich": "dehnen",
+"einheit": "m"
+},
+{
+"id": 31,
+"name": "Oberschenkel hinten",
+"bereich": "dehnen",
+"einheit": "m"
+},
+{
+"id": 32,
+"name": "Leiste",
+"bereich": "dehnen",
+"einheit": "m"
+},
+{
+"id": 33,
+"name": "Wade",
+"bereich": "dehnen",
+"einheit": "m"
+},
+{
+"id": 34,
+"name": "Faszienrolle",
+"bereich": "dehnen",
+"einheit": "m"
+},
+{
+"id": 35,
+"name": "Dehnen sonstiges",
+"bereich": "dehnen",
+"einheit": "m"
+}
+]
