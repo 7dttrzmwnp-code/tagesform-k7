@@ -222,7 +222,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
       <div class="chips c5" id="gef"><button data-v="1">😫</button><button data-v="2">😕</button><button data-v="3">😐</button><button data-v="4">🙂</button><button data-v="5">😄</button></div></div>
 
     <div class="q"><div class="row"><span class="ql">Schlaf letzte Nacht</span><b id="schlafV"></b></div>
-      <input type="range" id="schlaf" min="4" max="11" step="0.5" value="8" aria-label="Schlaf in Stunden">
+      <input type="range" id="schlaf" min="0" max="11" step="0.5" value="0" aria-label="Schlaf in Stunden">
       <span class="hint" id="schlafHint">Erst beim Verschieben wird der Schlaf gespeichert.</span></div>
     </div>
 
@@ -368,7 +368,7 @@ function render(){
   if(closed)$('daySumT').textContent=[f.rpe!=null?'Anstrengung '+f.rpe:'',f.gef!=null?['😫','😕','😐','🙂','😄'][f.gef-1]:'',f.schlaf!=null?f.schlaf.toFixed(1).replace('.',',')+' h Schlaf':''].filter(Boolean).join(' · ');
   const nc=!noteOpen&&!!f.notiz.trim();$('noteBox').hidden=nc;$('noteSum').hidden=!nc;
   if(nc)$('noteSumT').textContent='„'+(f.notiz.trim().length>28?f.notiz.trim().slice(0,28)+'…':f.notiz.trim())+'“';
-  if(f.schlaf==null){$('schlafV').innerHTML='<span class="ghost">nicht angegeben</span>';$('schlaf').value=8;$('schlafHint').hidden=false}
+  if(f.schlaf==null){$('schlafV').innerHTML='<span class="ghost">0 h · nicht angegeben</span>';$('schlaf').value=0;$('schlafHint').hidden=false}
   else{$('schlafV').textContent=f.schlaf.toFixed(1).replace('.',',')+' h';$('schlaf').value=f.schlaf;$('schlafHint').hidden=true}
   $('notiz').value=f.notiz;
   $('send').disabled=!['team','spiel','eigen','ruhe'].some(has);
@@ -396,7 +396,7 @@ $('ex').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const d=b.
   ueSync();render()};
 $('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
 $('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
-$('schlaf').oninput=ev=>{f.schlaf=+ev.target.value;render()};
+$('schlaf').oninput=ev=>{f.schlaf=+ev.target.value>0?+ev.target.value:null;render()};
 $('notiz').oninput=ev=>f.notiz=ev.target.value;
 
 let tt;
