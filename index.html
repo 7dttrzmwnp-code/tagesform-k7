@@ -71,6 +71,9 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .ur .nm{font-weight:700}.ur .nm small{font-weight:400;color:var(--muted)}
 .ul{display:flex;flex-wrap:wrap;gap:8px 12px}
 .ul .step b{min-width:52px;font-size:1.1rem}
+.ur.uc2{border:0;border-left:3px solid var(--accent);background:none;color:var(--fg);flex-direction:row;justify-content:space-between;width:100%;font:600 .92rem var(--body);text-align:left;cursor:pointer}
+.ur.uc2 small{color:var(--muted);white-space:nowrap}
+.ur .link{align-self:flex-start;font-size:.85rem;color:var(--muted)}
 .ex .row b{font-variant-numeric:tabular-nums}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .row b{font:700 1.3rem var(--display)}
@@ -321,18 +324,19 @@ function widerspruch(d){
 let f, view='team', dayOpen=true, noteOpen=true;
 const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},ue:[],rpe:null,gef:null,schlaf:null,notiz:''});
 
-let ueOpen=null;
+let ueOpen=null, ueAct=null;
 const STEP={s:1,kg:5};
 function renderEx(){
-  const sel=new Set(f.ue.map(u=>u.id)), chip=i=>`<button class="uc${sel.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
+  const sel=new Set(f.ue.map(u=>u.id)), chip=i=>`<button class="uc${i===ueAct?' on':sel.has(i)?' on':''}" data-ue="${i}">${esc(UE[i][0])}</button>`;
   const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
     return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>`:''}`}).join('');
   const st=(j,k,t)=>`<div class="step"><button data-j="${j}" data-f="${k}" data-d="-1" aria-label="weniger">−</button><b>${t}</b><button data-j="${j}" data-f="${k}" data-d="1" aria-label="mehr">+</button></div>`;
   const rows=f.ue.map((u,j)=>{const e=UE[u.id][2];
     const line=e==='m'?st(j,'v',u.v+' min'):st(j,'s',u.s+' ×')+st(j,'v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st(j,'kg',u.kg+' kg'):'');
-    return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div></div>`}).join('');
+    if(u.id!==ueAct)return `<button class="ur uc2" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`;
+    return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div><button class="link" data-weg="${u.id}">Übung entfernen</button></div>`}).join('');
   $('ex').innerHTML=`${cats}
-    ${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rows}`:'<span class="hint">Bereich antippen und Übungen wählen. Nochmal antippen nimmt sie wieder raus.</span>'}`;
+    ${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rows}`:'<span class="hint">Bereich antippen und Übungen wählen. </span>'}`;
 }
 function ueSync(){const e={stabi:0,ball:0,lauf:0,kraft:0,dehnen:0};f.ue.forEach(u=>e[UE[u.id][1]]+=ueMin(u));f.eigen=e}
 $('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
@@ -380,11 +384,14 @@ document.querySelectorAll('.step').forEach(s=>{s.children[0].onclick=()=>{f[s.da
 $('gegner').oninput=ev=>f.gegner=ev.target.value;
 $('ex').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.cat)ueOpen=ueOpen===d.cat?null:d.cat;
-  else if(d.ue!=null){const id=+d.ue,j=f.ue.findIndex(u=>u.id===id);
-    if(j>=0)f.ue.splice(j,1);else f.ue.push(ueNeu(id))}
+  else if(d.ue!=null){const id=+d.ue;if(!f.ue.some(u=>u.id===id))f.ue.push(ueNeu(id));ueAct=ueAct===id?null:id}
+  else if(d.go!=null)ueAct=+d.go;
+  else if(d.weg!=null){f.ue=f.ue.filter(u=>u.id!==+d.weg);ueAct=null}
   else if(d.j!=null){const u=f.ue[+d.j],e=UE[u.id][2],k=d.f,old=u[k];
     const step=k==='v'?(e==='m'||e==='s'?5:1):STEP[k];u[k]=Math.max(0,Math.min(k==='s'?35:k==='kg'?1295:e==='m'?240:999,u[k]+(+d.d)*step));
     ueSync();if(INLINE&&kurz(daten()).length>64){u[k]=old;toast('Mehr passt nicht in eine Meldung.')}}
+  // nur eine Übung offen; Übungen, die auf 0 stehen bleiben, fallen beim Wechsel raus
+  f.ue=f.ue.filter(u=>u.id===ueAct||ueMin(u)>0);
   ueSync();render()};
 $('rpe').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.rpe=f.rpe==b.dataset.v?null:+b.dataset.v;render()};
 $('gef').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.gef=f.gef==b.dataset.v?null:+b.dataset.v;render()};
