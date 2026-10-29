@@ -200,6 +200,11 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .mfrage button.on{background:var(--warn);color:#fff}
 .mtext{font-size:.85rem;color:var(--muted);font-style:italic}
 .mhin{font-size:.85rem;color:var(--warn)}
+/* Nachricht von Dennis (2026-10-29) */
+.nachr{border:1.5px solid var(--accent);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.nachr small{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.nachr p{margin:0;font-size:1rem;white-space:pre-wrap}
+.nachr button{align-self:flex-start;border:0;border-radius:10px;min-height:40px;padding:0 16px;background:var(--accent);color:var(--accentfg);font:700 .9rem var(--body);cursor:pointer}
 </style>
 </head>
 <body>
@@ -211,6 +216,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
   </div>
 
   <div class="body" id="pEin">
+    <div id="nachrBox" hidden></div>
     <div class="q plan" id="planBox" hidden></div>
     <div class="done" id="doneBox" hidden><b>Heute erledigt ✓</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
     <div id="form">
@@ -733,6 +739,16 @@ $('memoBox').onclick=async ev=>{const t=ev.target.closest('button');if(!t)return
   if(t.dataset.mq){const id=t.dataset.mq,w=t.dataset.mv;memo.a[id]=w;memoZeigen();
     try{await fetch(MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Telegram-Init-Data':tg.initData},body:JSON.stringify({id,wert:w})})}catch(_){}}
 };
+// Nachrichten aus der Zentrale: nur Text, kein HTML; "Gelesen" geht als Start-Code nl-<id> bzw. sendData an den Bot
+const NACHR=(W&&Array.isArray(W.nm))?W.nm.filter(n=>Array.isArray(n)&&/^[0-9a-f]{12}$/.test(n[0])):[];
+function nachrZeigen(){const b=$('nachrBox');b.hidden=!NACHR.length;if(!NACHR.length)return;
+  b.innerHTML=NACHR.map(n=>`<div class="nachr"><small>Nachricht von Dennis · ${esc(String(n[2]||''))}</small><p>${esc(String(n[1]||''))}</p><button data-nl="${n[0]}">Gelesen ✓</button></div>`).join('');}
+$('nachrBox').onclick=ev=>{const t=ev.target.closest('button[data-nl]');if(!t)return;
+  const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id,bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
+  if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify({typ:'gelesen',id:t.dataset.nl}));return;}
+  if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start=nl-'+t.dataset.nl);setTimeout(()=>tg.close(),400);return;}
+  t.textContent='Nur in Telegram möglich';};
+nachrZeigen();
 planZeigen();
 if(W&&W.ub){document.querySelector('[data-t=berater]').hidden=false;document.querySelector('.tabs').classList.remove('two');}
 $('title').textContent=TITLES.ein;$('sub').textContent=DATUM;
