@@ -177,6 +177,29 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .footer{flex:none;background:var(--bg);padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 14px -10px rgba(0,0,0,.35)}
 .footer .send{position:static;transform:none;width:100%;display:block}
 .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+
+/* Sprachmemo (2026-10-29): Leiste unter den Kacheln, Aufnahme und Ergebnis im selben Fenster */
+.memobar{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:1.5px dashed var(--line);background:none;color:var(--fg);border-radius:12px;font:600 .95rem var(--body);cursor:pointer}
+.memobar svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:2;stroke-linecap:round}
+.memo{border:1.5px solid var(--accent);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.memo ol{margin:0;padding-left:20px;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:2px}
+.mrec{display:flex;align-items:center;gap:14px}
+.mknopf{width:64px;height:64px;border-radius:50%;border:0;background:var(--accent);color:var(--accentfg);display:grid;place-items:center;cursor:pointer;flex:none}
+.mknopf svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.mknopf.rec{animation:mpuls 1.4s infinite}
+.mknopf.rec i{width:22px;height:22px;border-radius:5px;background:currentColor;display:block}
+@keyframes mpuls{0%{box-shadow:0 0 0 0 rgba(176,38,63,.55)}70%{box-shadow:0 0 0 14px rgba(176,38,63,0)}100%{box-shadow:0 0 0 0 rgba(176,38,63,0)}}
+.mstat b{display:block;font-size:1.05rem}.mstat span{color:var(--muted);font-size:.85rem}
+.mok{color:var(--ok);font-size:.88rem;font-weight:600}
+.mz{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-weight:700}.mz:last-of-type{border-bottom:0}
+.mb{flex:none;min-width:92px;text-align:center;border:1.5px solid currentColor;border-radius:999px;padding:2px 10px;font:700 .72rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+.mb.spiel,.mb.team{color:var(--ok)}.mb.kraft,.mb.stabi,.mb.ausdauer{color:var(--blue)}.mb.gesundheit{color:var(--warn)}.mb.schlaf,.mb.befinden,.mb.ruhetag{color:var(--muted)}
+.mfrage{border:1.5px solid var(--warn);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.mfrage span{color:var(--muted);font-size:.9rem}.mfrage div{display:flex;gap:8px;flex-wrap:wrap}
+.mfrage button{border:1.5px solid var(--warn);background:none;color:var(--fg);border-radius:999px;padding:8px 18px;font:600 .9rem var(--body);cursor:pointer;min-height:40px}
+.mfrage button.on{background:var(--warn);color:#fff}
+.mtext{font-size:.85rem;color:var(--muted);font-style:italic}
+.mhin{font-size:.85rem;color:var(--warn)}
 </style>
 </head>
 <body>
@@ -197,7 +220,10 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
         <button data-k="spiel"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg></span>Spiel</button>
         <button data-k="eigen"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg></span>Eigenes Training</button>
         <button data-k="ruhe"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg></span>Ruhetag</button>
-      </div></div>
+      </div>
+      <button class="memobar" id="memoBar" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Oder einfach erzählen</button>
+      <div class="memo" id="memoBox" hidden></div>
+    </div>
 
     <div class="card" data-for="team" hidden>
       <h3>Mannschaftstraining</h3>
@@ -640,11 +666,79 @@ document.querySelector('.tabs').onclick=ev=>{const b=ev.target.closest('button')
   if(t==='woche')renderWoche();if(t==='berater')renderBerater();
   $('sub').textContent=t==='ein'?DATUM:WOCHE;
 };
+
+// Sprachmemo (Auftrag Dennis 2026-10-29): Aufnahme hier, Auswertung lokal am Server (Whisper + Regeln), Ergebnis füllt
+// das normale Formular vor. Gesendet wird wie immer über "Senden"; das Memo hängt der Bot danach als Notiz an.
+const MEMO_URL='https://proliga.uk/api/memo';
+const MEMO_AN=!!(W&&W.mm&&tg&&tg.initData&&window.MediaRecorder&&navigator.mediaDevices);
+const MEMO_ART={spiel:'Spiel',team:'Training',kraft:'Kraft',stabi:'Stabi',ausdauer:'Ausdauer',gesundheit:'Gesundheit',schlaf:'Schlaf',befinden:'Befinden',ruhetag:'Ruhetag'};
+let memo={st:'zu'}, mRec=null, mTeile=[], mUhr=null, mStart=0;
+const mSvg='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+function memoZeigen(){
+  const b=$('memoBox');$('memoBar').hidden=!MEMO_AN||memo.st!=='zu';b.hidden=memo.st==='zu';if(b.hidden)return;
+  const leit='<ol><li>Spiel oder Training?</li><li>Wie viele Minuten?</li><li>Tore und Vorlagen</li><li>Wie fühlst du dich, wie lange geschlafen?</li><li>Schmerzen: wo und links oder rechts?</li></ol>';
+  if(memo.st==='bereit'||memo.st==='auf'){
+    const auf=memo.st==='auf',sek=auf?Math.floor((Date.now()-mStart)/1000):0;
+    b.innerHTML=`<span class="ql">Erzähl einfach</span>${auf?'':leit}<div class="mrec"><button class="mknopf${auf?' rec':''}" id="mKnopf" aria-label="${auf?'Aufnahme beenden':'Aufnahme starten'}">${auf?'<i></i>':mSvg}</button>
+      <div class="mstat"><b>${auf?`Aufnahme läuft · ${Math.floor(sek/60)}:${String(sek%60).padStart(2,'0')}`:'Tippen zum Starten'}</b><span>${auf?'Tippen zum Beenden (höchstens 3 Minuten)':'Ein Memo, bis zu 3 Minuten'}</span></div></div>
+      <button class="link" id="mZu">Abbrechen</button>`;
+  }else if(memo.st==='laden'){
+    b.innerHTML='<span class="ql">Erzähl einfach</span><div class="mstat"><b>Wird ausgewertet …</b><span>Das dauert meist 10 bis 30 Sekunden.</span></div>';
+  }else if(memo.st==='fehler'){
+    b.innerHTML=`<span class="ql">Erzähl einfach</span><div class="mstat"><b>Das hat nicht geklappt</b><span>${esc(memo.fehler||'')}</span></div><button class="link" id="mNeu">Noch einmal aufnehmen</button> <button class="link" id="mZu">Schließen</button>`;
+  }else if(memo.st==='fertig'){
+    const r=memo.r,z=r.karte.map(x=>`<div class="mz"><span class="mb ${x.art}">${MEMO_ART[x.art]||x.art}</span><span>${esc(x.text)}</span></div>`).join('');
+    const fr=(r.fragen||[]).map(q=>`<div class="mfrage"><span>Kurze Frage: ${esc(q.frage)}</span><div>${q.optionen.map(o=>`<button data-mq="${esc(q.id)}" data-mv="${esc(o)}" class="${memo.a[q.id]===o?'on':''}">${esc(o)}</button>`).join('')}</div></div>`).join('');
+    const of=(r.vf.of||[]).length?`<span class="mhin">Bitte unten ergänzen: ${r.vf.of.map(esc).join(', ')}</span>`:'';
+    b.innerHTML=`<span class="mok">${z?'✓ Memo verstanden und eingetragen':'Ich habe noch nichts sicher erkannt – bitte unten eintragen.'}</span>${z}${fr}${of}
+      <span class="mtext">„${esc(r.text.length>160?r.text.slice(0,160)+'…':r.text)}“</span><span class="hint">Prüf unten kurz alles und tippe dann auf Senden.</span><button class="link" id="mNeu">Neu aufnehmen</button>`;
+  }
+}
+function memoTick(){if(memo.st!=='auf')return clearInterval(mUhr);if(Date.now()-mStart>180000)return memoStop();memoZeigen()}
+async function memoStart(){
+  try{
+    const strom=await navigator.mediaDevices.getUserMedia({audio:true});
+    const typ=['audio/mp4','audio/webm;codecs=opus','audio/webm'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t));
+    mRec=new MediaRecorder(strom,typ?{mimeType:typ}:undefined);mTeile=[];
+    mRec.ondataavailable=e=>{if(e.data&&e.data.size)mTeile.push(e.data)};
+    mRec.onstop=()=>{strom.getTracks().forEach(t=>t.stop());memoSenden(new Blob(mTeile,{type:(mRec.mimeType||typ||'audio/mp4')}))};
+    mRec.start(1000);mStart=Date.now();memo={st:'auf'};mUhr=setInterval(memoTick,1000);memoZeigen();
+  }catch(_){memo={st:'fehler',fehler:'Kein Zugriff aufs Mikrofon. Bitte in Telegram erlauben.'};memoZeigen()}
+}
+function memoStop(){clearInterval(mUhr);if(mRec&&mRec.state!=='inactive'){memo={st:'laden'};memoZeigen();mRec.stop()}}
+async function memoSenden(blob){
+  if(Date.now()-mStart<1500){memo={st:'fehler',fehler:'Die Aufnahme war zu kurz.'};return memoZeigen()}
+  try{
+    const res=await fetch(MEMO_URL,{method:'POST',headers:{'Content-Type':(blob.type||'audio/mp4').split(';')[0],'X-Telegram-Init-Data':tg.initData},body:blob});
+    const r=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(r.fehler||('Fehler '+res.status));
+    memo={st:'fertig',r,a:{}};memoVorbelegen(r.vf||{});
+  }catch(e){memo={st:'fehler',fehler:e.message==='Failed to fetch'?'Keine Verbindung zum Server.':e.message}}
+  memoZeigen();
+}
+// Vorbelegung "vf" (gleiches Format kommt auch vom Bot im Anker): nur Erkanntes setzen, Rest bleibt wie es ist
+function memoVorbelegen(v){
+  if(v.tm)f.team=v.tm;if(v.ru)f.ruhe='ja';
+  if(v.sp){f.rolle=v.sp.r;f.spMin=v.sp.r==='bank'?0:(v.sp.m!=null?Math.min(150,v.sp.m):f.spMin);f.tore=v.sp.t||0;f.vorl=v.sp.v||0}
+  if(v.ue){const L=ueDecode(v.ue);L.forEach(u=>{f.ue=f.ue.filter(x=>x.id!==u.id);f.ue.push(u)});ueSync()}
+  if(v.g)f.gef=v.g;if(v.s!=null)f.schlaf=Math.min(11,v.s);
+  view=v.sp?'spiel':v.ue?'eigen':v.tm?'team':v.ru?'ruhe':view;dayOpen=true;render();
+}
+$('memoBar').onclick=()=>{memo={st:'bereit'};memoZeigen()};
+$('memoBox').onclick=async ev=>{const t=ev.target.closest('button');if(!t)return;
+  if(t.id==='mKnopf')return memo.st==='auf'?memoStop():memoStart();
+  if(t.id==='mZu'){memo={st:'zu'};return memoZeigen()}
+  if(t.id==='mNeu'){memo={st:'bereit'};return memoZeigen()}
+  if(t.dataset.mq){const id=t.dataset.mq,w=t.dataset.mv;memo.a[id]=w;memoZeigen();
+    try{await fetch(MEMO_URL,{method:'POST',headers:{'Content-Type':'application/json','X-Telegram-Init-Data':tg.initData},body:JSON.stringify({id,wert:w})})}catch(_){}}
+};
 planZeigen();
 if(W&&W.ub){document.querySelector('[data-t=berater]').hidden=false;document.querySelector('.tabs').classList.remove('two');}
 $('title').textContent=TITLES.ein;$('sub').textContent=DATUM;
 if(location.hash.match(/[#&]tab=woche/))document.querySelector('[data-t=woche]').click();
 load();
+memoZeigen();
+if(W&&W.vf&&!week[TODAY]){memoVorbelegen(W.vf);if(W.vf.of&&W.vf.of.length)toast('Bitte ergänzen: '+W.vf.of.join(', '))}
 </script>
 </body>
 </html>
