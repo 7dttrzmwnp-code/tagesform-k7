@@ -174,7 +174,7 @@ body{margin:0;background:var(--bg)}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 .app{height:100%;min-height:0;padding-bottom:0;display:flex;flex-direction:column}
 .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.footer{flex:none;background:var(--bg);padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 14px -10px rgba(0,0,0,.35)}
+.footer{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:16px 0 calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
 .footer .send{position:static;transform:none;width:100%;display:block}
 .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 
@@ -272,13 +272,14 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
     <div class="daysum chathint" id="chatHint"><span>Gegner oder Zusatzinfo fragt dich der Bot nach dem Senden im Chat. Schreib kurz oder schick eine Sprachnachricht.</span></div>
     <div class="q" id="noteBox"><span class="ql">Zusatzinfos (freiwillig)</span>
       <textarea id="notiz" placeholder="z. B. Knie zwickt, Trainer hat Position gewechselt"></textarea></div>
+    <!-- Senden ganz unten im Formular (Wunsch Dennis 2026-10-29): erst alles ausfüllen, dann abschicken -->
+    <div class="footer" id="footer"><span class="hint">Alles drin? Dann abschicken.</span><button class="send" id="send" disabled>Eintrag senden</button></div>
     </div>
   </div>
 
   <div class="body" id="pWoche" hidden></div>
   <div class="body" id="pBerater" hidden></div>
 </div>
-  <div class="footer" id="footer"><button class="send" id="send" disabled>Senden</button></div>
   <div class="toast" id="toast" hidden></div>
 </div>
 
