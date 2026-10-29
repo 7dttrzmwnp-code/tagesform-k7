@@ -188,7 +188,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
       <div class="tiles" id="art">
         <button data-k="team"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg></span>Mannschafts&shy;training</button>
         <button data-k="spiel"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg></span>Spiel</button>
-        <button data-k="eigen"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg></span>Stabi &amp; Eigenes</button>
+        <button data-k="eigen"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg></span>Eigenes Training</button>
         <button data-k="ruhe"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg></span>Ruhetag</button>
       </div></div>
 
@@ -216,7 +216,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
     </div>
 
     <div class="card" data-for="eigen" hidden>
-      <h3>Stabi &amp; Eigenes</h3>
+      <h3>Eigenes Training</h3>
       <div id="ex"></div>
     </div>
 
@@ -256,10 +256,13 @@ const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.
 const $=id=>document.getElementById(id);
 const ICO={"team": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg>`, "spiel": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg>`, "eigen": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg>`, "ruhe": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>`, "tor": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7h18v11M3 11h18M8 7v11M16 7v11"/></svg>`, "vorl": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L18 6M12 6h6v6"/></svg>`, "zeit": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/></svg>`, "lauf": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h4l3-6 4 8 2-4h3"/></svg>`, "serie": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l5-5 4 4 7-7M14 8h6v6"/></svg>`, "best": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 21l4.5-2.5 4.5 2.5-1.5-7.5"/></svg>`, "check": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, "mic": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>`, "chat": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>`};
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
-const EX=[['stabi','Stabi-Übungen'],['ball','Ball / Technik'],['lauf','Lauf'],['kraft','Kraft'],['dehnen','Dehnen']];
+const EX=[['stabi','Stabi'],['ball','Ball / Technik'],['lauf','Ausdauer'],['kraft','Kraft'],['dehnen','Dehnen']];
+// Zur Auswahl stehen wie in der ProLiga-Zentrale nur Stabi, Kraft, Ausdauer. Ball/Technik und Dehnen bleiben für alte Einträge lesbar
+// (Reihenfolge von EX bleibt für das Datenformat unverändert).
+const EX_AUSWAHL=['stabi','kraft','lauf'];
 // Übungskatalog: Platz in der Liste = feste ID, nur hinten anfügen (gleiche Liste in uebungen.json für den Bot)
 // Einheit: s = Sätze × Sekunden, w = Sätze × Wiederholungen, k = Sätze × Wiederholungen mit Kilo, m = Minuten
-const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Lauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Lauf sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"]];
+const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Dauerlauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Ausdauer sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"]];
 const ueNeu=id=>UE[id][2]==='m'?{id,v:0}:UE[id][2]==='k'?{id,s:0,v:0,kg:0}:{id,s:0,v:0};
 // Minuten für die Wochenübersicht: Sätze × (Belastung + 60 s Pause), eine Wiederholung zählt 3 s
 const ueMin=u=>{const e=UE[u.id][2];return e==='m'?u.v:u.s&&u.v?Math.max(1,Math.round(u.s*((e==='s'?u.v:u.v*3)+60)/60)):0};
@@ -343,7 +346,7 @@ function renderEx(){
     const line=e==='m'?st('v',u.v+' min'):st('s',u.s+' ×')+st('v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st('kg',u.kg+' kg'):'');
     return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div><button class="link" data-weg="${u.id}">Übung entfernen</button></div>`};
   const act=f.ue.find(u=>u.id===ueAct);
-  const cats=EX.map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
+  const cats=EX_AUSWAHL.map(k=>EX.find(x=>x[0]===k)).map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
     return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>${act&&UE[act.id][1]===k?edit(act):''}`:''}`}).join('');
   const rest=f.ue.filter(u=>u.id!==ueAct).map(u=>`<button class="ur uc2" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`).join('');
   $('ex').innerHTML=`${cats}${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rest}`:'<span class="hint">Bereich antippen und Übungen wählen.</span>'}`;
@@ -465,7 +468,7 @@ function dayLog(){
 const nzList=L=>L.map(([i,t,v])=>{const k=`<span class="nzday">${v?ICO.mic+' ':''}${DAYS[i]}</span>`;return t.length<=70?`<div class="nz">${k}<span>${esc(t)}</span></div>`:`<details class="nz"><summary>${k}<span>${esc(t.slice(0,66).replace(/\s+\S*$/,''))} … <b>ganz anzeigen</b></span></summary><p>${esc(t)}</p></details>`}).join('');
 
 // Dein Training: Minuten je Bereich (Wochensumme), pro Tag gestapelt, Stabi über die Wochen
-const BKEY=EX.map(x=>x[0]), BNAME={stabi:'Stabi',ball:'Ball / Technik',lauf:'Lauf',kraft:'Kraft',dehnen:'Dehnen'};
+const BKEY=EX.map(x=>x[0]), BNAME={stabi:'Stabi',ball:'Ball / Technik',lauf:'Ausdauer',kraft:'Kraft',dehnen:'Dehnen'};
 const BCOL={stabi:'var(--accent)',ball:'var(--c-ball)',lauf:'var(--c-lauf)',kraft:'var(--c-kraft)',dehnen:'var(--c-dehnen)'};
 function trainingBlock(s){
   const sum=k=>week.reduce((a,d)=>a+(d?d.eigen[k]:0),0), tot=BKEY.reduce((a,k)=>a+sum(k),0);

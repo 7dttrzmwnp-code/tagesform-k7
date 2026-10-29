@@ -97,7 +97,7 @@
 },
 {
 "id": 16,
-"name": "Lockerer Lauf",
+"name": "Lockerer Dauerlauf",
 "bereich": "lauf",
 "einheit": "m"
 },
@@ -127,7 +127,7 @@
 },
 {
 "id": 21,
-"name": "Lauf sonstiges",
+"name": "Ausdauer sonstiges",
 "bereich": "lauf",
 "einheit": "m"
 },
