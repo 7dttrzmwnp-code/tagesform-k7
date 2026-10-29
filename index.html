@@ -43,6 +43,12 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .body{padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
 .ql{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700}
 .q{display:flex;flex-direction:column;gap:8px}
+.plan{margin-bottom:14px}.pz{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:12px;padding:10px 12px;font:600 .95rem var(--body);cursor:pointer;min-height:48px}
+.pz i{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--muted);display:grid;place-items:center;font-style:normal;flex:none}
+.pz.on i{background:var(--ok);border-color:var(--ok);color:#fff}.pz.on span{color:var(--muted)}
+.pz small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.pmelden{border:0;border-radius:12px;min-height:48px;background:var(--accent);color:var(--accentfg);font:700 .95rem var(--body);cursor:pointer}.pmelden[disabled]{opacity:.45}
+.pwoche{background:var(--chip);border-left:4px solid var(--ok);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;margin-bottom:12px}.pwoche b{font-size:1.4rem}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tiles button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:12px;padding:12px 8px;font:700 .95rem var(--body);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
 .tiles button span{font-size:1.3rem;display:grid;place-items:center;height:30px}
@@ -182,6 +188,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
   </div>
 
   <div class="body" id="pEin">
+    <div class="q plan" id="planBox" hidden></div>
     <div class="done" id="doneBox" hidden><b>Heute erledigt ✓</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
     <div id="form">
     <div class="q"><span class="ql">Was war?</span>
@@ -286,6 +293,26 @@ try{const m=location.hash.match(/[#&]w=([^&]+)/);if(m)W=JSON.parse(decodeURIComp
 if(!W||W.v!==2)W=null;
 const NAME=(W&&W.n)||'';
 const KW=(W&&W.kw)||'';
+// Trainingsplan von Dennis (aus der Zentrale; der Bot gibt nur den eigenen aktiven Plan im Anker mit)
+const PLAN=(W&&W.pl&&Array.isArray(W.pl.l)&&W.pl.l.length)?W.pl:null;
+let planE=PLAN?(PLAN.e||0):0;
+const planN=()=>PLAN?PLAN.l.filter((_,i)=>planE>>i&1).length:0;
+function planZeigen(){
+  if(!PLAN){$('planBox').hidden=true;return;}
+  $('planBox').hidden=false;
+  const geaendert=planE!==(PLAN.e||0);
+  $('planBox').innerHTML=`<span class="ql">Dein Plan von Dennis · ${planN()} von ${PLAN.l.length}</span>`+
+    PLAN.l.map((x,i)=>`<button class="pz${planE>>i&1?' on':''}" data-pi="${i}"><i>${planE>>i&1?'✓':''}</i><span>${esc(x[0])}<small>${esc(x[1])}</small></span></button>`).join('')+
+    `<button class="pmelden" id="planSend"${geaendert?'':' disabled'}>${geaendert?'Erledigt melden':'Antippen zum Abhaken'}</button>`;
+  $('planBox').querySelectorAll('[data-pi]').forEach(b=>b.onclick=()=>{planE^=1<<+b.dataset.pi;planZeigen();});
+  $('planSend').onclick=()=>{
+    if($('planSend').disabled)return;
+    const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
+    const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
+    if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify({typ:'plan',e:planE}));return;}
+    if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start=pl-'+planE.toString(36));setTimeout(()=>tg.close(),400);return;}
+    $('planSend').textContent='Nur in Telegram möglich';};
+}
 const TODAY=W&&Number.isInteger(W.heute)?W.heute:(heuteDatum.getDay()+6)%7;
 const ZIEL={stabiTage:(W&&W.ziel)||4};
 const HASVW=!!(W&&W.vw);
@@ -528,7 +555,7 @@ function renderWoche(){
     if(SVOR&&SHALB){const H=SHALB;if((H.t||0)>(SVOR.t||0))up.push(`${H.t-(SVOR.t||0)} ${tor(H.t-(SVOR.t||0))}`);if((H.v||0)>(SVOR.v||0))up.push(`${H.v-(SVOR.v||0)} ${vorl(H.v-(SVOR.v||0))}`);if((H.st||0)>(SVOR.st||0))up.push(`${H.st-(SVOR.st||0)} Stabi-Tage`)}
     saison=`<section><span class="ql">Deine Saison bisher${SAISON.name?' · '+esc(SAISON.name):''}</span><div class="season"><div><b>${SAISON.sp||0}</b><small>Spiele</small></div><div><b>${SAISON.m||0}</b><small>Minuten</small></div><div><b>${SAISON.t||0}</b><small>${tor(SAISON.t||0)}</small></div><div><b>${SAISON.v||0}</b><small>${vorl(SAISON.v||0)}</small></div></div>${up.length?`<span class="upline">▲ ${esc(SHALB.name||'Diese Halbserie')}: schon ${up.slice(0,2).join(' und ')} mehr als in der ganzen ${esc(SVOR.name||'letzten Halbserie')}</span>`:''}</section>`}
   const rest=Math.max(0,ZIEL.stabiTage-s.stabiTage), pct=Math.min(100,s.stabiTage/ZIEL.stabiTage*100);
-    $('pWoche').innerHTML=`
+    $('pWoche').innerHTML=(PLAN?`<div class="pwoche"><span class="ql">Plan von Dennis heute</span><b>${planN()} von ${PLAN.l.length}</b><span>${planN()===PLAN.l.length?'Alles erledigt 💪':'Weiter so!'}</span></div>`:'')+`
   <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
     <small class="heroline">${s.spielmin} Spielminuten · ${s.stabiMin} min Stabi · ${s.eigen} min eigenes Training</small></div>
   ${best.length?`<div class="best">${ICO.best} Neuer Bestwert: ${best[0]}</div>`:''}
@@ -613,6 +640,7 @@ document.querySelector('.tabs').onclick=ev=>{const b=ev.target.closest('button')
   if(t==='woche')renderWoche();if(t==='berater')renderBerater();
   $('sub').textContent=t==='ein'?DATUM:WOCHE;
 };
+planZeigen();
 if(W&&W.ub){document.querySelector('[data-t=berater]').hidden=false;document.querySelector('.tabs').classList.remove('two');}
 $('title').textContent=TITLES.ein;$('sub').textContent=DATUM;
 if(location.hash.match(/[#&]tab=woche/))document.querySelector('[data-t=woche]').click();
