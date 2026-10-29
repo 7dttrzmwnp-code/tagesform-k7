@@ -218,7 +218,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
   <div class="body" id="pEin">
     <div id="nachrBox" hidden></div>
     <div class="q plan" id="planBox" hidden></div>
-    <div class="done" id="doneBox" hidden><b>Heute erledigt ✓</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span></div>
+    <div class="done" id="doneBox" hidden><b>Heute erledigt ✓</b><span id="doneTxt"></span><span class="hint">Schau in „Meine Woche“, wie es läuft.</span><button class="link" id="korrKnopf" style="align-self:flex-start;margin-top:6px">Ändern oder nachtragen</button></div>
     <div id="form">
     <div class="q"><span class="ql">Was war?</span>
       <div class="tiles" id="art">
@@ -415,10 +415,17 @@ function ueSync(){const e={stabi:0,ball:0,lauf:0,kraft:0,dehnen:0};f.ue.forEach(
 $('rpe').innerHTML=Array.from({length:10},(_,i)=>`<button data-v="${i+1}">${i+1}</button>`).join('');
 
 const DATUM=heuteDatum.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+let korr=false;
+// Heutige Werte ins Formular (für "Ändern oder nachtragen"); ohne Übungsliste: Minuten je Bereich als "sonstiges"
+function ausTag(d){const g=blank();g.team=d.team;g.ruhe=d.ruhe?'ja':null;
+  if(d.spiel){g.rolle=d.spiel.rolle;g.spMin=d.spiel.min||0;g.tore=d.spiel.tore||0;g.vorl=d.spiel.vorl||0;g.gegner=d.spiel.gegner||''}
+  g.ue=d.u?ueDecode(d.u):Object.entries(d.eigen).filter(([,m])=>m>0).map(([k,m])=>({id:UE.findIndex(x=>x[1]===k&&x[2]==='m'&&/sonstiges/.test(x[0])),v:m})).filter(u=>u.id>=0);
+  g.rpe=d.rpe;g.gef=d.gef;g.schlaf=d.schlaf;return g}
 function load(){
   const d=week[TODAY]; f=blank();
   view='team';dayOpen=true;noteOpen=true;
-  $('doneBox').hidden=!d;$('form').hidden=!!d;$('footer').hidden=!!d;
+  $('doneBox').hidden=!d||korr;$('form').hidden=!!d&&!korr;$('footer').hidden=!!d&&!korr;
+  if(d&&korr){f=ausTag(d);ueSync();$('send').textContent='Änderung senden'}
   if(d)$('doneTxt').textContent=d.zeit?`Gesendet um ${d.zeit} Uhr. Danke!`:'Danke!';
   render();
 }
@@ -447,6 +454,7 @@ function render(){
 }
 $('art').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;view=b.dataset.k;if(dayDone())dayOpen=false;if(f.notiz.trim())noteOpen=false;render();};
 $('dayEdit').onclick=()=>{dayOpen=true;render()};
+$('korrKnopf').onclick=()=>{korr=true;load()};
 $('noteEdit').onclick=()=>{noteOpen=true;render()};
 $('teamYN').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.team=f.team===b.dataset.v?null:b.dataset.v;render()};
 $('ruheYN').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;f.ruhe=f.ruhe===b.dataset.v?null:b.dataset.v;render()};
@@ -477,14 +485,14 @@ function toast(t){$('toast').textContent=t;$('toast').hidden=false;clearTimeout(
 function daten(){
   const sp=f.rolle?{rolle:f.rolle,min:f.rolle==='bank'?0:f.spMin,tore:f.tore,vorlagen:f.vorl,gegner:f.gegner.trim().slice(0,60)}:null;
   return {v:2,typ:'checkin',team:f.team,ruhetag:f.ruhe==='ja',spiel:sp,eigen:{...f.eigen},
-    anstrengung:f.rpe,gefuehl:f.gef,schlaf:f.schlaf,notiz:f.notiz.trim().slice(0,500)};
+    anstrengung:f.rpe,gefuehl:f.gef,schlaf:f.schlaf,notiz:f.notiz.trim().slice(0,500),ue:ueCode(f.ue).slice(0,200),...(korr?{korrektur:true}:{})};
 }
 // Kurzform für den Knopf in der Nachricht (Telegram-Startcode, max. 64 Zeichen, ohne Freitext):
 // Übungen werden noch nicht einzeln gespeichert, nur die Minuten je Bereich (ueCode/ueDecode für später).
 // c2-<team j/n/f/x><ruhe 0/1><rolle s/e/b/x>-min-tore-vorl-stabi-ball-lauf-kraft-dehnen-anstr-gef-schlaf*10 (x = leer)
 function kurz(d){
   const z=n=>n==null?'x':Math.max(0,Math.min(999,Math.round(+n||0))), s=d.spiel||{};
-  return ['c2',({ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x')+(d.ruhetag?1:0)+({start:'s',ein:'e',bank:'b'}[s.rolle]||'x'),
+  return [korr?'c3':'c2',({ja:'j',nein:'n',faellt_aus:'f'}[d.team]||'x')+(d.ruhetag?1:0)+({start:'s',ein:'e',bank:'b'}[s.rolle]||'x'),
     z(s.min||0),z(s.tore||0),z(s.vorlagen||0),...EX.map(([k])=>z(d.eigen[k])),z(d.anstrengung),z(d.gefuehl),d.schlaf==null?'x':z(d.schlaf*10)].join('-');
 }
 $('send').onclick=()=>{
@@ -494,7 +502,13 @@ $('send').onclick=()=>{
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
   if(tg&&q&&bot){
-    tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400);
+    const los=()=>{tg.openTelegramLink('https://t.me/'+bot+'?start='+kurz(d));setTimeout(()=>tg.close(),400)};
+    if(!d.ue||!tg.initData)return los();
+    $('send').disabled=true;$('send').textContent='Wird gesendet …';
+    // Kommt der Upload nicht an, wird trotzdem gespeichert (dann nur Minuten je Bereich)
+    const stopp=setTimeout(los,4000);
+    fetch('https://proliga.uk/api/memo',{method:'POST',headers:{'Content-Type':'application/json','X-Telegram-Init-Data':tg.initData},
+      body:JSON.stringify({typ:'uebungen',ue:d.ue})}).catch(()=>{}).finally(()=>{clearTimeout(stopp);los()});
     return;}
   $('send').textContent=tg&&q?'Fehler: Bot-Adresse fehlt':'Nur in Telegram möglich';
 };
