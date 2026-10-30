@@ -320,6 +320,7 @@ const ueTxt=u=>{const [n,,e]=UE[u.id];return e==='m'?`${n} ${u.v} min`:`${n} ${u
 const heuteDatum=new Date();
 // Knopf in der Nachricht: nur Zahlen gehen per Startcode, Freitext fragt der Bot danach im Chat ab
 // m=1: geöffnet über den festen Knopf „Training“ unten links, dann wie aus der Nachricht über Start-Code senden
+const BOT=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
 const INLINE=!!(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id)||/[#&]m=1(&|$)/.test(location.hash);
 if(INLINE)document.body.classList.add('inline');
 
@@ -615,8 +616,15 @@ function renderWoche(){
   ${ser.length?`<div class="streak">${ser.join('')}</div>`:''}
   ${saison}
   ${s.notizen.length?`<section><span class="ql">Deine Zusatzinfos</span>${nzList(s.notizen)}</section>`:''}
-  <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>`;
+  <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>
+  ${tg&&BOT?`<button class="pmelden" id="berichtKnopf" style="width:100%">Bericht als PDF anfordern</button><span class="hint">Der Bot schickt dir das PDF in den Chat, nur mit deinen eigenen Daten.</span>`:''}`;
+  const bk=$('berichtKnopf');if(bk)bk.onclick=berichtAnfordern;
 }
+// PDF-Bericht anfordern: Start-Code br, der Bot erstellt das PDF nur für den eigenen Chat
+function berichtAnfordern(){
+  if(INLINE&&BOT){tg.openTelegramLink('https://t.me/'+BOT+'?start=br');setTimeout(()=>tg.close(),400);return;}
+  if(tg&&tg.sendData){tg.sendData(JSON.stringify({typ:'bericht'}));return;}
+  $('berichtKnopf').textContent='Nur in Telegram möglich';}
 function renderBerater(){
   const s=sumUp(), a=[];
   if(s.schlafKurz.length>=2)a.push(['bad',`${s.schlafKurz.length} Nächte unter 7 Stunden (${s.schlafKurz.map(i=>DAYS[i]).join(', ')})`]);
