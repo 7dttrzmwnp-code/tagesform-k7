@@ -319,7 +319,8 @@ const esc=t=>t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&qu
 const ueTxt=u=>{const [n,,e]=UE[u.id];return e==='m'?`${n} ${u.v} min`:`${n} ${u.s} × ${u.v}${e==='s'?' s':''}${e==='k'?' mit '+u.kg+' kg':''}`};
 const heuteDatum=new Date();
 // Knopf in der Nachricht: nur Zahlen gehen per Startcode, Freitext fragt der Bot danach im Chat ab
-const INLINE=!!(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id);
+// m=1: geöffnet über den festen Knopf „Training“ unten links, dann wie aus der Nachricht über Start-Code senden
+const INLINE=!!(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id)||/[#&]m=1(&|$)/.test(location.hash);
 if(INLINE)document.body.classList.add('inline');
 
 let W=null;
@@ -341,7 +342,7 @@ function planZeigen(){
   $('planBox').querySelectorAll('[data-pi]').forEach(b=>b.onclick=()=>{planE^=1<<+b.dataset.pi;planZeigen();});
   $('planSend').onclick=()=>{
     if($('planSend').disabled)return;
-    const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
+    const q=INLINE;
     const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
     if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify({typ:'plan',e:planE}));return;}
     if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start=pl-'+planE.toString(36));setTimeout(()=>tg.close(),400);return;}
@@ -499,7 +500,7 @@ function kurz(d){
 $('send').onclick=()=>{
   if($('send').disabled)return;
   const d=daten();
-  const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id;
+  const q=INLINE;
   const bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify(d));return;}
   if(tg&&q&&bot){
@@ -759,7 +760,7 @@ const NACHR=(W&&Array.isArray(W.nm))?W.nm.filter(n=>Array.isArray(n)&&/^[0-9a-f]
 function nachrZeigen(){const b=$('nachrBox');b.hidden=!NACHR.length;if(!NACHR.length)return;
   b.innerHTML=NACHR.map(n=>`<div class="nachr"><small>Nachricht von Dennis · ${esc(String(n[2]||''))}</small><p>${esc(String(n[1]||''))}</p><button data-nl="${n[0]}">Gelesen ✓</button></div>`).join('');}
 $('nachrBox').onclick=ev=>{const t=ev.target.closest('button[data-nl]');if(!t)return;
-  const q=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.query_id,bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
+  const q=INLINE,bot=(location.hash.match(/[#&]b=([A-Za-z0-9_]+)/)||[])[1];
   if(tg&&!q&&tg.sendData){tg.sendData(JSON.stringify({typ:'gelesen',id:t.dataset.nl}));return;}
   if(tg&&q&&bot){tg.openTelegramLink('https://t.me/'+bot+'?start=nl-'+t.dataset.nl);setTimeout(()=>tg.close(),400);return;}
   t.textContent='Nur in Telegram möglich';};
