@@ -156,8 +156,6 @@ section{display:flex;flex-direction:column;gap:8px}
 .tr details{font-size:.82rem}.tr table{width:100%;border-collapse:collapse;margin-top:6px}.tr td,.tr th{padding:3px 2px;border-bottom:1px solid var(--line);text-align:right}.tr td:first-child,.tr th:first-child{text-align:left}
 .upline{color:var(--ok);font-weight:700;font-size:.85rem}
 
-.chathint{display:none}
-body.inline .chathint{display:flex}
 body.inline :is(#gegner,#noteBox,#noteSum){display:none!important}
 .nz{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:.92rem;border-left:3px solid var(--accent);padding:4px 10px}
 details.nz{display:block}
@@ -278,7 +276,6 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
     </div>
 
     <div class="daysum" id="noteSum" hidden><span><b>Zusatzinfo ✓</b> <span id="noteSumT"></span></span><button class="link" id="noteEdit">Ändern</button></div>
-    <div class="daysum chathint" id="chatHint"><span>Gegner oder Zusatzinfo fragt dich der Bot nach dem Senden im Chat. Schreib kurz oder schick eine Sprachnachricht.</span></div>
     <div class="q" id="noteBox"><span class="ql">Zusatzinfos (freiwillig)</span>
       <textarea id="notiz" placeholder="z. B. Knie zwickt, Trainer hat Position gewechselt"></textarea></div>
     <!-- Senden ganz unten im Formular (Wunsch Dennis 2026-10-29): erst alles ausfüllen, dann abschicken -->
