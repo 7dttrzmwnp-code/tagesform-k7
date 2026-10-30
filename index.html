@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Mein Training</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: Handy-Spalte wie die echte Mini-App (weinrot ins Schwarze), drei Reiter: Eintragen, Meine Woche (Spieler), Berater (Agentur) */
 :root{
@@ -14,8 +14,8 @@
   --accent:#8e1b32; --accentfg:#ffffff; --accent2:#3a3a3e; --blue:#2a8bd0; --soft:#9aa4a0;
   --ok:#2e7d4f; --warn:#b26a00; --bad:#b3261e; --c-ball:#8d939b; --c-lauf:#5c6168; --c-kraft:#b9bec5; --c-dehnen:#e3c3ca;
   --head:linear-gradient(135deg,#7a1028 0%,#3d0a16 55%,#111113 100%); --headfg:#ffffff;
-  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
-  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;--c-ball:#8a8a92;--c-lauf:#62626a;--c-kraft:#b8b8c0;--c-dehnen:#ead3d8;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#181c1a;--fg:#e9ecea;--muted:#9aa49f;--line:#2b312e;--chip:#242a27;--page:#0e100f;--accent:#b0263f;--accent2:#c9cdca;--blue:#64b5ef;--soft:#6c7570;--ok:#5cc28a;--warn:#e0a040;--bad:#ef6a5f;--c-ball:#8a8a92;--c-lauf:#62626a;--c-kraft:#b8b8c0;--c-dehnen:#ead3d8;color-scheme:dark}
@@ -24,7 +24,7 @@ body{background:var(--page);color:var(--fg);font-family:var(--body);font-size:16
 .app{max-width:440px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative;padding-bottom:96px}
 .tabs.two{grid-template-columns:1fr 1fr}
 .hero2{background:var(--head);color:var(--headfg);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:2px}
-.hero2 b{font:700 2rem var(--display);text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+.hero2 b{font:300 2.2rem var(--display);letter-spacing:-.01em;line-height:1.05;font-variant-numeric:tabular-nums}
 .wins{display:flex;flex-direction:column;gap:6px}
 .wins div{display:grid;grid-template-columns:28px 1fr;align-items:center;background:var(--chip);border-left:4px solid var(--ok);border-radius:8px;padding:8px 10px;font-weight:600}
 .goal2{display:flex;flex-direction:column;gap:6px}
@@ -32,7 +32,7 @@ body{background:var(--page);color:var(--fg);font-family:var(--body);font-size:16
 .track{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
 .track i{display:block;height:100%;background:var(--accent)}
 .sh{background:var(--head);color:var(--headfg);padding-block:14px 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
-.sh h1{font:700 1.6rem var(--display);margin:0;letter-spacing:.03em;text-transform:uppercase;text-wrap:balance}
+.sh h1{font:600 1.6rem var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
 .sh small{opacity:.85}
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);background:rgba(0,0,0,.25);border-radius:10px;padding:3px}
 .tabs button,.seg button{border:0;background:none;padding:8px 4px;border-radius:8px;font:700 .92rem var(--body);color:inherit;opacity:.8;cursor:pointer}
@@ -58,9 +58,12 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .tiles button.on{border-color:var(--accent);background:var(--accent);color:var(--accentfg)}
 .tiles button.done::after{content:"✓";position:absolute;top:5px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--bg);color:var(--accent);font-size:.8rem;display:grid;place-items:center;border:1.5px solid var(--accent)}
 .card{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.card h3{margin:0;font:700 1.1rem var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--accent)}
+.card h3{margin:0;font:600 1.1rem var(--display);color:var(--accent)}
 .n{font-weight:600}
 .chips{display:grid;gap:6px}
+.gef button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px}
+.gef small{font-size:.68rem;font-weight:600;opacity:.8}
+.face{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c5{grid-template-columns:repeat(5,1fr)}.c7{grid-template-columns:repeat(7,1fr)}.c10{grid-template-columns:repeat(10,1fr)}
 .chips button{border:1.5px solid var(--line);background:var(--chip);color:var(--fg);border-radius:10px;padding:9px 0;font:600 .9rem var(--body);cursor:pointer;font-variant-numeric:tabular-nums}
 .c7 button,.c10 button{font-size:.82rem;padding:8px 0}
@@ -119,13 +122,13 @@ textarea{min-height:64px;resize:vertical}
 .empty{color:var(--muted);text-align:center;padding:20px 0}
 section{display:flex;flex-direction:column;gap:8px}
 .done{background:var(--chip);border-left:4px solid var(--ok);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:4px}
-.done b{font:700 1.5rem var(--display);text-transform:uppercase}
+.done b{font:600 1.4rem var(--display)}
 #form{display:flex;flex-direction:column;gap:16px}
 .more{border:1.5px dashed var(--line);background:none;color:var(--accent);border-radius:10px;padding:10px;font:700 .9rem var(--body);cursor:pointer}
 .heroline{opacity:.85;margin-top:6px;font-size:.85rem}
 .det summary{cursor:pointer;color:var(--accent);font-weight:700;padding:6px 0}
 .daybox{border:1.5px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:14px}
-.daybox h3{margin:0;font:700 1.1rem var(--display);letter-spacing:.03em;text-transform:uppercase;color:var(--accent)}
+.daybox h3{margin:0;font:600 1.1rem var(--display);color:var(--accent)}
 .daybox h3 small{font:600 .8rem var(--body);text-transform:none;letter-spacing:0;color:var(--muted)}
 .daysum{background:var(--chip);border-left:4px solid var(--ok);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.92rem}
 .chart{width:100%;height:auto;display:block}
@@ -267,7 +270,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none}
       <div class="row hint"><span>1 locker</span><span>10 am Limit</span></div></div>
 
     <div class="q"><span class="ql">Wie fühlst du dich?</span>
-      <div class="chips c5" id="gef"><button data-v="1">😫</button><button data-v="2">😕</button><button data-v="3">😐</button><button data-v="4">🙂</button><button data-v="5">😄</button></div></div>
+      <div class="chips c5 gef" id="gef"><button data-v="1"><svg class="face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 16.5c2-2 5-2 7 0M9 10h.01M15 10h.01"/></svg><small>schlecht</small></button><button data-v="2"><svg class="face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 16c2-1 5-1 7 0M9 10h.01M15 10h.01"/></svg><small>mäßig</small></button><button data-v="3"><svg class="face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15h7M9 10h.01M15 10h.01"/></svg><small>okay</small></button><button data-v="4"><svg class="face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c2 1.5 5 1.5 7 0M9 10h.01M15 10h.01"/></svg><small>gut</small></button><button data-v="5"><svg class="face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 13.5c2 3 6 3 8 0M9 10h.01M15 10h.01"/></svg><small>top</small></button></div></div>
 
     <div class="q"><div class="row"><span class="ql">Schlaf letzte Nacht</span><b id="schlafV"></b></div>
       <input type="range" id="schlaf" min="0" max="11" step="0.5" value="0" aria-label="Schlaf in Stunden">
@@ -296,6 +299,7 @@ const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.
 const $=id=>document.getElementById(id);
 const ICO={"team": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M13.5 15.2c.9-.8 1.9-1.2 3-1.2 2.3 0 4 1.5 4.5 4"/></svg>`, "spiel": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5l4 2.9-1.5 4.7h-5L8 10.4z"/><path d="M12 3v4.5M21 10.4h-5M15 20l-.5-4.9M9 20l.5-4.9M3 10.4h5"/></svg>`, "eigen": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8v8M4 10v4M17.5 8v8M20 10v4M6.5 12h11"/></svg>`, "ruhe": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg>`, "tor": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18V7h18v11M3 11h18M8 7v11M16 7v11"/></svg>`, "vorl": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18L18 6M12 6h6v6"/></svg>`, "zeit": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M10 2h4"/></svg>`, "lauf": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h4l3-6 4 8 2-4h3"/></svg>`, "serie": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16l5-5 4 4 7-7M14 8h6v6"/></svg>`, "best": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 21l4.5-2.5 4.5 2.5-1.5-7.5"/></svg>`, "check": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`, "mic": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>`, "chat": `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>`};
 const DAYS=['Mo','Di','Mi','Do','Fr','Sa','So'];
+const GEFW=['schlecht','mäßig','okay','gut','top'];
 const EX=[['stabi','Stabi'],['ball','Ball / Technik'],['lauf','Ausdauer'],['kraft','Kraft'],['dehnen','Dehnen']];
 // Zur Auswahl stehen wie in der ProLiga-Zentrale nur Stabi, Kraft, Ausdauer. Ball/Technik und Dehnen bleiben für alte Einträge lesbar
 // (Reihenfolge von EX bleibt für das Datenformat unverändert).
@@ -393,7 +397,7 @@ function widerspruch(d){
   return w;
 }
 
-let f, view='team', dayOpen=true, noteOpen=true;
+let f, view=null, dayOpen=true, noteOpen=true;
 const blank=()=>({team:null,ruhe:null,rolle:null,spMin:0,tore:0,vorl:0,gegner:'',eigen:{stabi:0,ball:0,lauf:0,kraft:0,dehnen:0},ue:[],rpe:null,gef:null,schlaf:null,notiz:''});
 
 let ueOpen=null, ueAct=null;
@@ -423,9 +427,9 @@ function ausTag(d){const g=blank();g.team=d.team;g.ruhe=d.ruhe?'ja':null;
   g.rpe=d.rpe;g.gef=d.gef;g.schlaf=d.schlaf;return g}
 function load(){
   const d=week[TODAY]; f=blank();
-  view='team';dayOpen=true;noteOpen=true;
+  view=null;dayOpen=true;noteOpen=true;
   $('doneBox').hidden=!d||korr;$('form').hidden=!!d&&!korr;$('footer').hidden=!!d&&!korr;
-  if(d&&korr){f=ausTag(d);ueSync();$('send').textContent='Änderung senden'}
+  if(d&&korr){f=ausTag(d);ueSync();view=['spiel','eigen','team','ruhe'].find(has)||null;$('send').textContent='Änderung senden'}
   if(d)$('doneTxt').textContent=d.zeit?`Gesendet um ${d.zeit} Uhr. Danke!`:'Danke!';
   render();
 }
@@ -444,7 +448,7 @@ function render(){
   renderEx();
   pick($('rpe'),f.rpe);pick($('gef'),f.gef);
   const closed=!dayOpen&&dayDone();$('dayBox').hidden=closed;$('daySum').hidden=!closed;
-  if(closed)$('daySumT').textContent=[f.rpe!=null?'Anstrengung '+f.rpe:'',f.gef!=null?['😫','😕','😐','🙂','😄'][f.gef-1]:'',f.schlaf!=null?f.schlaf.toFixed(1).replace('.',',')+' h Schlaf':''].filter(Boolean).join(' · ');
+  if(closed)$('daySumT').textContent=[f.rpe!=null?'Anstrengung '+f.rpe:'',f.gef!=null?'Befinden '+GEFW[f.gef-1]:'',f.schlaf!=null?f.schlaf.toFixed(1).replace('.',',')+' h Schlaf':''].filter(Boolean).join(' · ');
   const nc=!noteOpen&&!!f.notiz.trim();$('noteBox').hidden=nc;$('noteSum').hidden=!nc;
   if(nc)$('noteSumT').textContent='„'+(f.notiz.trim().length>28?f.notiz.trim().slice(0,28)+'…':f.notiz.trim())+'“';
   if(f.schlaf==null){$('schlafV').innerHTML='<span class="ghost">0 h · nicht angegeben</span>';$('schlaf').value=0;$('schlafHint').hidden=false}
@@ -585,9 +589,9 @@ function renderWoche(){
   if(s.eigen>V.eigen)plus.push([ICO.lauf,`${s.eigen-V.eigen} min mehr eigenes Training`]);
   if(!HASVW)plus.length=0;
   const scorer=s.tore+s.vorl;
-  const hero=scorer?{big:`${s.tore} ${tor(s.tore)} · ${s.vorl} ${vorl(s.vorl)}`,txt:scorer>1?'Starke Woche, du warst an '+scorer+' Toren beteiligt!':'Du hast ein Tor vorbereitet oder erzielt. Weiter so!'}
-    :s.stabiTage>=ZIEL.stabiTage?{big:'Ziel geschafft',txt:`${s.stabiTage} Tage Stabi. Genau so!`}
-    :{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:`Tage Stabi. Noch ${ZIEL.stabiTage-s.stabiTage}, dann ist das Ziel geschafft!`};
+  const hero=scorer?{big:`${s.tore} ${tor(s.tore)} · ${s.vorl} ${vorl(s.vorl)}`,txt:`An ${scorer} ${scorer===1?'Tor':'Toren'} beteiligt · ${s.stabiTage} von ${ZIEL.stabiTage} Tagen Stabi`}
+    :s.stabiTage>=ZIEL.stabiTage?{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:'Tage Stabi · Wochenziel erreicht'}
+    :{big:`${s.stabiTage} von ${ZIEL.stabiTage}`,txt:'Tage Stabi'};
   // Bestwerte: nur zeigen, wenn die laufende Woche einen früheren Bestwert übertrifft
   const best=[];
   if(BEST.sm>0&&s.stabiMin>BEST.sm)best.push(`${s.stabiMin} min Stabi in einer Woche`);
@@ -602,12 +606,12 @@ function renderWoche(){
     if(SVOR&&SHALB){const H=SHALB;if((H.t||0)>(SVOR.t||0))up.push(`${H.t-(SVOR.t||0)} ${tor(H.t-(SVOR.t||0))}`);if((H.v||0)>(SVOR.v||0))up.push(`${H.v-(SVOR.v||0)} ${vorl(H.v-(SVOR.v||0))}`);if((H.st||0)>(SVOR.st||0))up.push(`${H.st-(SVOR.st||0)} Stabi-Tage`)}
     saison=`<section><span class="ql">Deine Saison bisher${SAISON.name?' · '+esc(SAISON.name):''}</span><div class="season"><div><b>${SAISON.sp||0}</b><small>Spiele</small></div><div><b>${SAISON.m||0}</b><small>Minuten</small></div><div><b>${SAISON.t||0}</b><small>${tor(SAISON.t||0)}</small></div><div><b>${SAISON.v||0}</b><small>${vorl(SAISON.v||0)}</small></div></div>${up.length?`<span class="upline">▲ ${esc(SHALB.name||'Diese Halbserie')}: schon ${up.slice(0,2).join(' und ')} mehr als in der ganzen ${esc(SVOR.name||'letzten Halbserie')}</span>`:''}</section>`}
   const rest=Math.max(0,ZIEL.stabiTage-s.stabiTage), pct=Math.min(100,s.stabiTage/ZIEL.stabiTage*100);
-    $('pWoche').innerHTML=(PLAN?`<div class="pwoche"><span class="ql">Plan von Dennis heute</span><b>${planN()} von ${PLAN.l.length}</b><span>${planN()===PLAN.l.length?'Alles erledigt 💪':'Weiter so!'}</span></div>`:'')+`
+    $('pWoche').innerHTML=(PLAN?`<div class="pwoche"><span class="ql">Plan von Dennis heute</span><b>${planN()} von ${PLAN.l.length}</b><span>${planN()===PLAN.l.length?'Alles erledigt':(PLAN.l.length-planN())+' offen'}</span></div>`:'')+`
   <div class="hero2"><span class="ql" style="color:inherit;opacity:.8">Deine Woche${KW?' · KW '+KW:''}</span><b>${hero.big}</b><span>${hero.txt}</span>
     <small class="heroline">${s.spielmin} Spielminuten · ${s.stabiMin} min Stabi · ${s.eigen} min eigenes Training</small></div>
   ${best.length?`<div class="best">${ICO.best} Neuer Bestwert: ${best[0]}</div>`:''}
   ${plus.length?`<section><span class="ql">Besser als ${VGLTXT}</span><div class="wins">${plus.slice(0,3).map(([i,t])=>`<div><span>${i}</span>${t}</div>`).join('')}</div></section>`:''}
-  <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`Noch ${rest} ${rest===1?'Tag':'Tage'}!`:'Geschafft ✓'}</span></div>
+  <section><div class="row"><span class="ql">Dein Stabi-Ziel</span><span class="hint">${rest?`${rest} ${rest===1?'Tag':'Tage'} offen`:'Erreicht ✓'}</span></div>
   ${strip()}</section>
   ${trainingBlock(s)}
   ${ser.length?`<div class="streak">${ser.join('')}</div>`:''}
@@ -665,13 +669,13 @@ function charts(s){
   const saison=all.reduce((a,w)=>({min:a.min+w.min,tore:a.tore+w.tore,vorl:a.vorl+w.vorl,sp:a.sp+(w.sp!=null?w.sp:(w.min>0?1:0))}),{min:0,tore:0,vorl:0,sp:0});
   const c1=bars({vals:all.map(w=>w.min),labels:lab,max:100,hi:last,fmt:(v,i)=>v?v+"'":'–',
     tips:all.map(w=>`KW ${w.kw}: ${w.min} min, ${w.tore} ${tor(w.tore)}, ${w.vorl} ${vorl(w.vorl)}`)});
-  const tv=all.map(w=>(w.tore?'⚽'.repeat(w.tore):'')+(w.vorl?'🎯'.repeat(w.vorl):'')||'·');
+  const tv=all.map(w=>[w.tore?w.tore+' T':'',w.vorl?w.vorl+' V':''].filter(Boolean).join(' ')||'·');
   const c2=bars({vals:all.map(w=>w.stabi),labels:lab,max:Math.max(5,...all.map(w=>w.stabi)),ref:ZIEL.stabiTage,refLbl:'Ziel '+ZIEL.stabiTage,hi:last,fmt:v=>v,
     tips:all.map(w=>`KW ${w.kw}: ${w.stabi} Tage Stabi`)});
   const sl=week.map(d=>d&&d.schlaf!=null?d.schlaf:0);
   const c3=bars({vals:sl,labels:DAYS,max:10,ref:7,refLbl:'7 h',hi:v=>v>0&&v<7,fmt:(v,i)=>v?v.toFixed(1).replace('.',','):'',
     tips:week.map((d,i)=>`${DAYS[i]}: ${d&&d.schlaf!=null?d.schlaf.toFixed(1).replace('.',',')+' h':'kein Wert'}`)});
-  const gef=week.map(d=>d&&d.gef?['😫','😕','😐','🙂','😄'][d.gef-1]:'·');
+  const gef=week.map(d=>d&&d.gef?GEFW[d.gef-1]:'·');
   return `<section><span class="ql">Bisher (${all.length} ${all.length===1?'Woche':'Wochen'})</span><div class="season"><div><b>${saison.sp}</b><small>Spiele</small></div><div><b>${saison.min}</b><small>Minuten</small></div><div><b>${saison.tore}</b><small>${tor(saison.tore)}</small></div><div><b>${saison.vorl}</b><small>${vorl(saison.vorl)}</small></div></div></section>
   <section><span class="ql">Spielminuten pro Woche</span>${c1}<div class="under" style="grid-template-columns:repeat(${tv.length},1fr)">${tv.map(t=>`<span>${t}</span>`).join('')}</div><span class="hint">⚽ Tor · 🎯 Vorlage · aktuelle Woche dunkelrot</span></section>
   <section><span class="ql">Stabi-Tage pro Woche</span>${c2}</section>
