@@ -329,6 +329,8 @@ try{const m=location.hash.match(/[#&]w=([^&]+)/);if(m)W=JSON.parse(decodeURIComp
 if(!W||W.v!==2)W=null;
 const NAME=(W&&W.n)||'';
 const KW=(W&&W.kw)||'';
+// Übungen ab ID 36 nur für Spieler, denen der Bot sie im Anker freigibt (ux = Liste der IDs)
+const UE_FREI=36, UX=new Set(W&&Array.isArray(W.ux)?W.ux:[]);
 // Trainingsplan von Dennis (aus der Zentrale; der Bot gibt nur den eigenen aktiven Plan im Anker mit)
 const PLAN=(W&&W.pl&&Array.isArray(W.pl.l)&&W.pl.l.length)?W.pl:null;
 let planE=PLAN?(PLAN.e||0):0;
@@ -409,7 +411,7 @@ function renderEx(){
     const line=e==='m'?st('v',u.v+' min'):st('s',u.s+' ×')+st('v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st('kg',u.kg+' kg'):'');
     return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div><button class="link" data-weg="${u.id}">Übung entfernen</button></div>`};
   const act=f.ue.find(u=>u.id===ueAct);
-  const cats=EX_AUSWAHL.map(k=>EX.find(x=>x[0]===k)).map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
+  const cats=EX_AUSWAHL.map(k=>EX.find(x=>x[0]===k)).map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k&&(i<UE_FREI||UX.has(i)||sel.has(i))?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
     return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>${act&&UE[act.id][1]===k?edit(act):''}`:''}`}).join('');
   const rest=f.ue.filter(u=>u.id!==ueAct).map(u=>`<button class="ur uc2" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`).join('');
   $('ex').innerHTML=`${cats}${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rest}`:'<span class="hint">Bereich antippen und Übungen wählen.</span>'}`;
