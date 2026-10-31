@@ -303,7 +303,7 @@ const EX=[['stabi','Stabi'],['ball','Ball / Technik'],['lauf','Ausdauer'],['kraf
 const EX_AUSWAHL=['stabi','kraft','lauf'];
 // Übungskatalog: Platz in der Liste = feste ID, nur hinten anfügen (gleiche Liste in uebungen.json für den Bot)
 // Einheit: s = Sätze × Sekunden, w = Sätze × Wiederholungen, k = Sätze × Wiederholungen mit Kilo, m = Minuten
-const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Dauerlauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Ausdauer sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"]];
+const UE=[["Plank","stabi","s"],["Seitstütz","stabi","s"],["Glute Bridge","stabi","w"],["Bird Dog","stabi","w"],["Dead Bug","stabi","w"],["Copenhagen","stabi","s"],["Superman","stabi","w"],["Einbeinstand","stabi","s"],["Stabi sonstiges","stabi","m"],["Jonglieren","ball","m"],["Passen an die Wand","ball","m"],["Dribbling Hütchen","ball","m"],["Schusstraining","ball","m"],["Ballannahme","ball","m"],["Kopfball","ball","m"],["Ball sonstiges","ball","m"],["Lockerer Dauerlauf","lauf","m"],["Intervalle","lauf","m"],["Sprints","lauf","m"],["Koordinationsleiter","lauf","m"],["Tempoläufe","lauf","m"],["Ausdauer sonstiges","lauf","m"],["Beinpresse","kraft","k"],["Kniebeuge","kraft","k"],["Ausfallschritt","kraft","k"],["Liegestütz","kraft","w"],["Klimmzug","kraft","w"],["Wadenheben","kraft","k"],["Nordic Hamstring","kraft","w"],["Kraft sonstiges","kraft","m"],["Hüftbeuger","dehnen","m"],["Oberschenkel hinten","dehnen","m"],["Leiste","dehnen","m"],["Wade","dehnen","m"],["Faszienrolle","dehnen","m"],["Dehnen sonstiges","dehnen","m"],["Bankdrücken","kraft","k"],["Schrägbankdrücken","kraft","k"],["Butterfly","kraft","k"],["Rudern","kraft","k"],["Schulterdrücken","kraft","k"],["Bizepscurls","kraft","k"],["Trizepsdrücken","kraft","k"],["Romanian Deadlift","kraft","k"],["Beinbeuger mit Ball","kraft","w"]];
 const ueNeu=id=>UE[id][2]==='m'?{id,v:0}:UE[id][2]==='k'?{id,s:0,v:0,kg:0}:{id,s:0,v:0};
 // Minuten für die Wochenübersicht: Sätze × (Belastung + 60 s Pause), eine Wiederholung zählt 3 s
 const ueMin=u=>{const e=UE[u.id][2];return e==='m'?u.v:u.s&&u.v?Math.max(1,Math.round(u.s*((e==='s'?u.v:u.v*3)+60)/60)):0};
@@ -329,6 +329,8 @@ try{const m=location.hash.match(/[#&]w=([^&]+)/);if(m)W=JSON.parse(decodeURIComp
 if(!W||W.v!==2)W=null;
 const NAME=(W&&W.n)||'';
 const KW=(W&&W.kw)||'';
+// Übungen ab ID 36 nur für Spieler, denen der Bot sie im Anker freigibt (ux = Liste der IDs)
+const UE_FREI=36, UX=new Set(W&&Array.isArray(W.ux)?W.ux:[]);
 // Trainingsplan von Dennis (aus der Zentrale; der Bot gibt nur den eigenen aktiven Plan im Anker mit)
 const PLAN=(W&&W.pl&&Array.isArray(W.pl.l)&&W.pl.l.length)?W.pl:null;
 let planE=PLAN?(PLAN.e||0):0;
@@ -409,7 +411,7 @@ function renderEx(){
     const line=e==='m'?st('v',u.v+' min'):st('s',u.s+' ×')+st('v',e==='s'?u.v+' s':u.v+' Wdh.')+(e==='k'?st('kg',u.kg+' kg'):'');
     return `<div class="ur"><span class="nm">${esc(UE[u.id][0])}${e==='m'||!ueMin(u)?'':` <small>· etwa ${ueMin(u)} min</small>`}</span><div class="ul">${line}</div><button class="link" data-weg="${u.id}">Übung entfernen</button></div>`};
   const act=f.ue.find(u=>u.id===ueAct);
-  const cats=EX_AUSWAHL.map(k=>EX.find(x=>x[0]===k)).map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
+  const cats=EX_AUSWAHL.map(k=>EX.find(x=>x[0]===k)).map(([k,n])=>{const ids=UE.map((x,i)=>x[1]===k&&(i<UE_FREI||UX.has(i)||sel.has(i))?i:-1).filter(i=>i>=0),c=ids.filter(i=>sel.has(i)).length,o=ueOpen===k;
     return `<button class="ucat${o?' open':''}" data-cat="${k}">${n}<small>${c?c+' gewählt · ':''}${ids.length} ${o?'▲':'▼'}</small></button>${o?`<div class="uz usub">${ids.map(chip).join('')}</div>${act&&UE[act.id][1]===k?edit(act):''}`:''}`}).join('');
   const rest=f.ue.filter(u=>u.id!==ueAct).map(u=>`<button class="ur uc2" data-go="${u.id}"><span>${esc(ueTxt(u))}</span><small>${ueMin(u)} min</small></button>`).join('');
   $('ex').innerHTML=`${cats}${f.ue.length?`<span class="ql">Gewählt · ${f.ue.length} ${f.ue.length===1?'Übung':'Übungen'} · etwa ${eSum()} min</span>${rest}`:'<span class="hint">Bereich antippen und Übungen wählen.</span>'}`;
