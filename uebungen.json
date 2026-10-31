@@ -214,5 +214,59 @@
 "name": "Dehnen sonstiges",
 "bereich": "dehnen",
 "einheit": "m"
+},
+{
+"id": 36,
+"name": "Bankdrücken",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 37,
+"name": "Schrägbankdrücken",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 38,
+"name": "Butterfly",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 39,
+"name": "Rudern",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 40,
+"name": "Schulterdrücken",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 41,
+"name": "Bizepscurls",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 42,
+"name": "Trizepsdrücken",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 43,
+"name": "Romanian Deadlift",
+"bereich": "kraft",
+"einheit": "k"
+},
+{
+"id": 44,
+"name": "Beinbeuger mit Ball",
+"bereich": "kraft",
+"einheit": "w"
 }
 ]
