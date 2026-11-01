@@ -619,14 +619,19 @@ function renderWoche(){
   ${saison}
   ${s.notizen.length?`<section><span class="ql">Deine Zusatzinfos</span>${nzList(s.notizen)}</section>`:''}
   <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>
-  ${tg&&BOT?`<button class="pmelden" id="berichtKnopf" style="width:100%">Bericht als PDF anfordern</button><span class="hint">Der Bot schickt dir das PDF in den Chat, nur mit deinen eigenen Daten.</span>`:''}`;
+  ${tg&&BOT?`<button class="pmelden" id="berichtKnopf" style="width:100%">Bericht erzeugen</button><span class="hint">Der Bericht erscheint in der Web-App unter Berichte, nur mit deinen eigenen Daten.</span>`:''}`;
   const bk=$('berichtKnopf');if(bk)bk.onclick=berichtAnfordern;
 }
-// PDF-Bericht anfordern: Start-Code br, der Bot erstellt das PDF nur für den eigenen Chat
-function berichtAnfordern(){
-  if(INLINE&&BOT){tg.openTelegramLink('https://t.me/'+BOT+'?start=br');setTimeout(()=>tg.close(),400);return;}
-  if(tg&&tg.sendData){tg.sendData(JSON.stringify({typ:'bericht'}));return;}
-  $('berichtKnopf').textContent='Nur in Telegram möglich';}
+// Bericht erzeugen: landet in der Web-App-Liste, Telegram schickt nichts
+async function berichtAnfordern(){
+  const k=$('berichtKnopf'),url='https://proliga.uk/app/#tab=berichte';
+  if(k.dataset.fertig){tg.openLink(url);return;}
+  if(!tg||!tg.initData){k.textContent='Nur in Telegram möglich';return;}
+  k.disabled=true;k.textContent='Bericht wird erstellt …';
+  let a={};try{const r=await fetch('https://proliga.uk/api/memo',{method:'POST',headers:{'Content-Type':'application/json','X-Telegram-Init-Data':tg.initData},body:'{"typ":"bericht"}'});a=await r.json();}catch(_){}
+  k.disabled=false;
+  if(a.ok){k.dataset.fertig='1';k.textContent='Web-App öffnen';try{tg.openLink(url);}catch(_){}return;}
+  k.textContent=a.fehler||'Hat nicht geklappt';}
 function renderBerater(){
   const s=sumUp(), a=[];
   if(s.schlafKurz.length>=2)a.push(['bad',`${s.schlafKurz.length} Nächte unter 7 Stunden (${s.schlafKurz.map(i=>DAYS[i]).join(', ')})`]);
