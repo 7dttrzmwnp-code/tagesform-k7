@@ -617,7 +617,7 @@ function renderWoche(){
   ${saison}
   ${s.notizen.length?`<section><span class="ql">Deine Zusatzinfos</span>${nzList(s.notizen)}</section>`:''}
   <details class="det"><summary>Tag für Tag anzeigen</summary>${dayLog()}</details>
-  ${tg&&BOT?`<button class="pmelden" id="berichtKnopf" style="width:100%">Bericht als PDF anfordern</button><span class="hint">Der Bot schickt dir das PDF in den Chat, nur mit deinen eigenen Daten.</span>`:''}`;
+  ${tg&&BOT?`<button class="pmelden" id="berichtKnopf" style="width:100%">Bericht anfordern</button><span class="hint">Der Bericht liegt danach in der Web-App unter Berichte, nur mit deinen eigenen Daten.</span>`:''}`;
   const bk=$('berichtKnopf');if(bk)bk.onclick=berichtAnfordern;
 }
 // PDF-Bericht anfordern: Start-Code br, der Bot erstellt das PDF nur für den eigenen Chat
